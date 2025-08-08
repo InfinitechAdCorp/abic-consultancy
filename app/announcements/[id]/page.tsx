@@ -31,8 +31,8 @@ export default function AnnouncementDetailsPage() {
     try {
       const response = await fetch(`/api/announcements/${id}`)
       const result = await response.json()
-      if (!result) {
-        throw new Error('Announcement not found.');
+      if (!response.ok) {
+        throw new Error(result.message || 'Failed to fetch announcement.');
       }
       setAnnouncement(result);
     } catch (err: any) {

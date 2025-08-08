@@ -1,10 +1,16 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-// This is http://localhost:8000/api based on your .env
 const LARAVEL_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(request: NextRequest) {
+  // Extract the ID directly from the request URL's pathname
+  const pathSegments = request.nextUrl.pathname.split('/');
+  const id = pathSegments[pathSegments.length - 1];
+
+  if (!LARAVEL_API_BASE_URL) {
+    return NextResponse.json({ message: 'NEXT_PUBLIC_API_URL is not defined' }, { status: 500 });
+  }
+
   try {
     // Fetch a single event from the Laravel API
     const response = await fetch(`${LARAVEL_API_BASE_URL}/events/${id}`, {
@@ -31,14 +37,21 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     const event = await response.json();
     return NextResponse.json(event);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Server error during GET for event ${id}:`, error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
   }
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function PUT(request: NextRequest) {
+  // Extract the ID directly from the request URL's pathname
+  const pathSegments = request.nextUrl.pathname.split('/');
+  const id = pathSegments[pathSegments.length - 1];
+
+  if (!LARAVEL_API_BASE_URL) {
+    return NextResponse.json({ message: 'NEXT_PUBLIC_API_URL is not defined' }, { status: 500 });
+  }
+
   try {
     const formData = await request.formData();
     const newFormData = new FormData();
@@ -68,14 +81,21 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const updatedEvent = await response.json();
     return NextResponse.json(updatedEvent);
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Server error during PUT for event ${id}:`, error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function DELETE(request: NextRequest) {
+  // Extract the ID directly from the request URL's pathname
+  const pathSegments = request.nextUrl.pathname.split('/');
+  const id = pathSegments[pathSegments.length - 1];
+
+  if (!LARAVEL_API_BASE_URL) {
+    return NextResponse.json({ message: 'NEXT_PUBLIC_API_URL is not defined' }, { status: 500 });
+  }
+
   try {
     const response = await fetch(`${LARAVEL_API_BASE_URL}/events/${id}`, {
       method: 'DELETE',
@@ -88,8 +108,8 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
     }
 
     return NextResponse.json({ message: `Event ${id} deleted successfully` });
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Server error during DELETE for event ${id}:`, error);
-    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
   }
 }

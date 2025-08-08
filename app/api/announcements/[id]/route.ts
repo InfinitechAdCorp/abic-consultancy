@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+export async function GET(request: NextRequest) {
+  // Extract the ID directly from the request URL's pathname
+  // Example: /api/announcements/123 -> pathname: /api/announcements/123 -> segments: ["", "api", "announcements", "123"]
+  const pathSegments = request.nextUrl.pathname.split('/');
+  const id = pathSegments[pathSegments.length - 1]; // Get the last segment as the ID
+
   const laravelApiUrl = process.env.NEXT_PUBLIC_API_URL;
 
   if (!laravelApiUrl) {
@@ -9,9 +13,7 @@ export async function GET(request: Request, { params }: { params: { id: string }
   }
 
   try {
-    // Replace '/api/announcements' with your actual Laravel endpoint for a single announcement
     const response = await fetch(`${laravelApiUrl}/announcements/${id}`, {
-      // Add any necessary headers for your Laravel API, e.g., Authorization
       headers: {
         'Content-Type': 'application/json',
       },
@@ -20,7 +22,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
     if (!response.ok) {
       const errorData = await response.json();
-      return NextResponse.json({ message: errorData.message || `Failed to fetch announcement with ID ${id} from Laravel` }, { status: response.status });
+      return NextResponse.json(
+        { message: errorData.message || `Failed to fetch announcement with ID ${id} from Laravel` },
+        { status: response.status }
+      );
     }
 
     const data = await response.json();
