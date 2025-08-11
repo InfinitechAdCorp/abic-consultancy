@@ -18,7 +18,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import LanguageSelector from "@/components/language-selector"
 import InstallPrompt from "@/components/install-prompt"
-import { ClientOnly } from "@/components/client-only" // Import the new ClientOnly component
+import { ClientOnly } from "@/components/client-only"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
@@ -80,8 +80,6 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <ClientOnly>
-            {" "}
-            {/* Wrap NavigationMenu with ClientOnly */}
             <NavigationMenu className="hidden lg:flex">
               <NavigationMenuList className="space-x-1">
                 <NavigationMenuItem>
@@ -222,153 +220,153 @@ export default function Navigation() {
             </div>
           </div>
 
-          {/* Mobile Navigation */}
-          <ClientOnly>
-            {" "}
-            {/* Wrap Sheet with ClientOnly */}
-            <Sheet open={isOpen} onOpenChange={setIsOpen}>
-              <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="lg:hidden h-8 w-8 text-gray-700 hover:bg-white/80 hover:text-emerald-600 border border-white/40 hover:border-emerald-300 transition-all backdrop-blur-sm"
+          {/* Mobile Navigation and Install Button */}
+          <div className="flex items-center lg:hidden space-x-2">
+            {/* PWA Install Prompt for Mobile - moved here */}
+            <ClientOnly>
+              <InstallPrompt />
+            </ClientOnly>
+            <ClientOnly>
+              <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-gray-700 hover:bg-white/80 hover:text-emerald-600 border border-white/40 hover:border-emerald-300 transition-all backdrop-blur-sm"
+                  >
+                    <Menu className="h-4 w-4" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                  </Button>
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-[280px] bg-gradient-to-b from-emerald-50/95 to-teal-50/95 backdrop-blur-xl border-r border-emerald-200"
                 >
-                  <Menu className="h-4 w-4" />
-                  <span className="sr-only">Toggle navigation menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent
-                side="left"
-                className="w-[280px] bg-gradient-to-b from-emerald-50/95 to-teal-50/95 backdrop-blur-xl border-r border-emerald-200"
-              >
-                <VisuallyHidden>
-                  <SheetTitle>Navigation Menu</SheetTitle>
-                </VisuallyHidden>
-                <div className="flex flex-col space-y-4 mt-4">
-                  <div className="flex items-center justify-between pb-4 border-b border-emerald-200">
-                    {" "}
-                    {/* Changed to justify-between */}
-                    <div className="bg-white/60 rounded-lg p-2 border border-emerald-200 backdrop-blur-sm">
-                      <Image
-                        src="/images/abic-logo.png"
-                        alt="ABIC Consultancy"
-                        width={80}
-                        height={32}
-                        className="object-contain"
-                      />
+                  <VisuallyHidden>
+                    <SheetTitle>Navigation Menu</SheetTitle>
+                  </VisuallyHidden>
+                  <div className="flex flex-col space-y-4 mt-4">
+                    <div className="flex items-center justify-center pb-4 border-b border-emerald-200">
+                      <div className="bg-white/60 rounded-lg p-2 border border-emerald-200 backdrop-blur-sm">
+                        <Image
+                          src="/images/abic-logo.png"
+                          alt="ABIC Consultancy"
+                          width={80}
+                          height={32}
+                          className="object-contain"
+                        />
+                      </div>
                     </div>
-                    {/* PWA Install Prompt for Mobile - moved here */}
-                    <InstallPrompt />
-                  </div>
-                  <nav className="flex flex-col space-y-1">
-                    <Link
-                      href="/"
-                      className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Home
-                    </Link>
-                    <Link
-                      href="/about"
-                      className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      About Us
-                    </Link>
-                    {/* News & Updates Collapsible for Mobile */}
-                    <Collapsible className="space-y-1">
-                      <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
-                        News & Updates
-                        <ChevronDown className="h-3 w-3" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-1 pl-4">
-                        {newsUpdatesItems.map((item) => (
+                    <nav className="flex flex-col space-y-1">
+                      <Link
+                        href="/"
+                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Home
+                      </Link>
+                      <Link
+                        href="/about"
+                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        About Us
+                      </Link>
+                      {/* News & Updates Collapsible for Mobile */}
+                      <Collapsible className="space-y-1">
+                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                          News & Updates
+                          <ChevronDown className="h-3 w-3" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pl-4">
+                          {newsUpdatesItems.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                              onClick={() => setIsOpen(false)}
+                            >
+                              {item.name}
+                            </Link>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                      <Collapsible className="space-y-1">
+                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                          Services
+                          <ChevronDown className="h-3 w-3" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pl-4">
+                          {servicesItems.map((category) => (
+                            <Collapsible key={category.title} className="space-y-1">
+                              <CollapsibleTrigger className="flex w-full items-center justify-between py-1.5 px-3 text-xs font-medium text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40">
+                                {category.title}
+                                <ChevronDown className="h-2 w-2" />
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="space-y-1 pl-4">
+                                {category.items.map((item) => (
+                                  <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className="block py-1 px-3 text-xs text-gray-500 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                                    onClick={() => setIsOpen(false)}
+                                  >
+                                    {item.name}
+                                  </Link>
+                                ))}
+                              </CollapsibleContent>
+                            </Collapsible>
+                          ))}
+                        </CollapsibleContent>
+                      </Collapsible>
+                      <Collapsible className="space-y-1">
+                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                          Business Solution
+                          <ChevronDown className="h-3 w-3" />
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="space-y-1 pl-4">
                           <Link
-                            key={item.name}
-                            href={item.href}
+                            href="/business-solution/hr-consulting"
                             className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
                             onClick={() => setIsOpen(false)}
                           >
-                            {item.name}
+                            HR Consulting
                           </Link>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                    <Collapsible className="space-y-1">
-                      <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
-                        Services
-                        <ChevronDown className="h-3 w-3" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-1 pl-4">
-                        {servicesItems.map((category) => (
-                          <Collapsible key={category.title} className="space-y-1">
-                            <CollapsibleTrigger className="flex w-full items-center justify-between py-1.5 px-3 text-xs font-medium text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40">
-                              {category.title}
-                              <ChevronDown className="h-2 w-2" />
-                            </CollapsibleTrigger>
-                            <CollapsibleContent className="space-y-1 pl-4">
-                              {category.items.map((item) => (
-                                <Link
-                                  key={item.name}
-                                  href={item.href}
-                                  className="block py-1 px-3 text-xs text-gray-500 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
-                                  onClick={() => setIsOpen(false)}
-                                >
-                                  {item.name}
-                                </Link>
-                              ))}
-                            </CollapsibleContent>
-                          </Collapsible>
-                        ))}
-                      </CollapsibleContent>
-                    </Collapsible>
-                    <Collapsible className="space-y-1">
-                      <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
-                        Business Solution
-                        <ChevronDown className="h-3 w-3" />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="space-y-1 pl-4">
-                        <Link
-                          href="/business-solution/hr-consulting"
-                          className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          HR Consulting
-                        </Link>
-                        <Link
-                          href="/business-solution/hr-outsourcing"
-                          className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
-                          onClick={() => setIsOpen(false)}
-                        >
-                          HR Outsourcing
-                        </Link>
-                      </CollapsibleContent>
-                    </Collapsible>
-                    <Link
-                      href="/blog"
-                      className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Blog
-                    </Link>
-                    <Link
-                      href="/contact"
-                      className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      Contact Us
-                    </Link>
-                  </nav>
-                  {/* Mobile Language Selector */}
-                  <div className="pt-3 mt-auto border-t border-emerald-200">
-                    <div className="bg-white/60 rounded-lg p-2 border border-emerald-200 backdrop-blur-sm">
-                      <LanguageSelector />
+                          <Link
+                            href="/business-solution/hr-outsourcing"
+                            className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                            onClick={() => setIsOpen(false)}
+                          >
+                            HR Outsourcing
+                          </Link>
+                        </CollapsibleContent>
+                      </Collapsible>
+                      <Link
+                        href="/blog"
+                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Blog
+                      </Link>
+                      <Link
+                        href="/contact"
+                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        Contact Us
+                      </Link>
+                    </nav>
+                    {/* Mobile Language Selector */}
+                    <div className="pt-3 mt-auto border-t border-emerald-200">
+                      <div className="bg-white/60 rounded-lg p-2 border border-emerald-200 backdrop-blur-sm">
+                        <LanguageSelector />
+                      </div>
                     </div>
                   </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </ClientOnly>
+                </SheetContent>
+              </Sheet>
+            </ClientOnly>
+          </div>
         </div>
       </div>
     </header>

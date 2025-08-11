@@ -57,7 +57,7 @@ export default function InstallPrompt() {
       className="flex items-center gap-2 bg-emerald-500 text-white hover:bg-emerald-600 transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <Download className="h-4 w-4" />
-      {deferredPrompt ? "Install App" : "Install App (Not Available)"}
+      {deferredPrompt ? "Install App" : "Install App"}
     </Button>
   )
 }

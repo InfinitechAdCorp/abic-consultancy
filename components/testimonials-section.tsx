@@ -160,7 +160,7 @@ function TestimonialForm({ onTestimonialSubmitted }: TestimonialFormProps) {
 
       toast({
         title: "Success!",
-        description: "Thank you for your testimonial! It has been submitted and is awaiting approval.",
+        description: "Thank you for your testimonial!.",
         variant: "default",
       });
       setName("")
