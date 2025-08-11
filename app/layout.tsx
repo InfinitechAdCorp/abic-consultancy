@@ -1,30 +1,34 @@
-import type { Metadata } from "next/types";
-import { Geist, Geist_Mono } from 'next/font/google';
-import { LanguageProvider } from '@/contexts/language-context'
+import type React from "react"
+import type { Metadata } from "next/types"
+import { Geist, Geist_Mono } from "next/font/google"
+import { LanguageProvider } from "@/contexts/language-context"
 import FloatingSocialMedia from "@/components/floating-social-media"
-import "./globals.css";
-import { Toaster } from "@/components/ui/toaster"; // Import the Toaster component
-import { ChatbotWrapper } from "@/components/chatbot-wrapper"; // Import the new ChatbotWrapper component
+import "./globals.css"
+import { Toaster } from "@/components/ui/toaster"
+import { ChatbotWrapper } from "@/components/chatbot-wrapper"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-});
+})
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
+})
 
 export const metadata: Metadata = {
   title: "ABIC Consultancy - Your Gateway to Business Success in the Philippines",
-  description: "Professional business consulting services in the Philippines. We provide comprehensive business solutions, visa services, tax consulting, and HR outsourcing to help foreign entrepreneurs establish and grow their businesses.",
-  keywords: "business consulting Philippines, visa services, tax consulting, HR outsourcing, business setup Philippines, foreign investment Philippines",
+  description:
+    "Professional business consulting services in the Philippines. We provide comprehensive business solutions, visa services, tax consulting, and HR outsourcing to help foreign entrepreneurs establish and grow their businesses.",
+  keywords:
+    "business consulting Philippines, visa services, tax consulting, HR outsourcing, business setup Philippines, foreign investment Philippines",
   authors: [{ name: "ABIC Consultancy" }],
   creator: "INFINITECH ADVERTISING CORPORATION",
   openGraph: {
     title: "ABIC Consultancy - Business Success in the Philippines",
-    description: "Your trusted partner for business success in the Philippines since 2018. Comprehensive consulting services for foreign entrepreneurs and investors.",
+    description:
+      "Your trusted partner for business success in the Philippines since 2018. Comprehensive consulting services for foreign entrepreneurs and investors.",
     url: "https://abic-consultancy.com",
     siteName: "ABIC Consultancy",
     locale: "en_US",
@@ -41,21 +45,28 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
     },
   },
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en">
       <head>
+        {/* PWA Manifest */}
+        <link rel="manifest" href="/manifest.json" />
+        {/* Apple Touch Icon for iOS Safari */}
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        {/* Theme color for mobile browsers */}
+        <meta name="theme-color" content="#0D9488" />
+
         {/* CSS to hide Google Translate UI elements */}
         <style>{`
           .goog-te-banner-frame.skiptranslate {
@@ -125,28 +136,28 @@ export default function RootLayout({
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "ABIC Consultancy",
-              "alternateName": "Advanced Beyond International Consulting Inc.",
-              "url": "https://abic-consultancy.com",
-              "logo": "https://abic-consultancy.com/images/abic-logo.png",
-              "description": "Professional business consulting services in the Philippines since 2018",
-              "address": {
+              name: "ABIC Consultancy",
+              alternateName: "Advanced Beyond International Consulting Inc.",
+              url: "https://abic-consultancy.com",
+              logo: "https://abic-consultancy.com/images/abic-logo.png",
+              description: "Professional business consulting services in the Philippines since 2018",
+              address: {
                 "@type": "PostalAddress",
-                "addressLocality": "Makati City",
-                "addressCountry": "Philippines"
+                addressLocality: "Makati City",
+                addressCountry: "Philippines",
               },
-              "contactPoint": {
+              contactPoint: {
                 "@type": "ContactPoint",
-                "telephone": "+63-2-8123-4567",
-                "contactType": "customer service",
-                "availableLanguage": ["English", "Filipino", "Chinese"]
+                telephone: "+63-2-8123-4567",
+                contactType: "customer service",
+                availableLanguage: ["English", "Filipino", "Chinese"],
               },
-              "sameAs": [
+              sameAs: [
                 "https://facebook.com/abic-consultancy",
                 "https://linkedin.com/company/abic-consultancy",
-                "https://twitter.com/abic-consultancy"
-              ]
-            })
+                "https://twitter.com/abic-consultancy",
+              ],
+            }),
           }}
         />
       </head>
@@ -160,5 +171,5 @@ export default function RootLayout({
         </LanguageProvider>
       </body>
     </html>
-  );
+  )
 }

@@ -1,8 +1,10 @@
-const withPWA = require("@imbios/next-pwa")({
+// next.config.js
+const withPWA = require("next-pwa")({
   dest: "public",
   register: true,
   skipWaiting: true,
-  disable: false, // THIS MUST BE FALSE FOR LOCAL TESTING
+  // In development, you might want to disable PWA for faster rebuilds:
+  disable: process.env.NODE_ENV === 'development',
 })
 
 /** @type {import('next').NextConfig} */
@@ -14,7 +16,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost"], // Allow images from localhost
+    domains: ["localhost", "abic-consultancy.com"], // Allow images from localhost and your domain
     unoptimized: true,
   },
 }
