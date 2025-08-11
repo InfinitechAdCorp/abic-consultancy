@@ -1,5 +1,16 @@
 "use client"
-import { ArrowRight, CheckCircle, Star, Users, Award, Clock, Building2, Globe, CreditCard, HeadphonesIcon, TrendingUp } from 'lucide-react'
+
+import {
+  ArrowRight,
+  CheckCircle,
+  Star,
+  Award,
+  Building2,
+  Globe,
+  CreditCard,
+  HeadphonesIcon,
+  TrendingUp,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useEffect, useState } from "react"
@@ -8,16 +19,34 @@ import Image from "next/image"
 import Link from "next/link"
 
 // Static data for international visas, as provided
-const visaDestinations = [{ id: 1, name: "China Visa", imagePath: "/images/great-wall-china.png", slug: "china-visa" },{ id: 2, name: "Tourist Thailand Visa", imagePath: "/images/tourist-thailand-visa.png", slug: "tourist-thailand-visa" },{ id: 3, name: "Destination Thailand Visa", imagePath: "/images/destination_thailand.png", slug: "destination-thailand-visa" },{ id: 4, name: "Italy Visa", imagePath: "/images/italy-visa.png", slug: "italy-visa" },{ id: 5, name: "Hong Kong Visa", imagePath: "/images/hong-kong-visa.png", slug: "hong-kong-visa" },{ id: 6, name: "Saudi Visa", imagePath: "/images/saudi-visa.png", slug: "saudi-visa" }, // More descriptive placeholder
-{ id: 7, name: "Korea Visa", imagePath: "/images/korea-visa.png", slug: "korea-visa" },{ id: 8, name: "Schengen Visa", imagePath: "/images/schengen.png", slug: "schengen-visa" }, // Using Eiffel Tower for Schengen as a placeholder
-{ id: 9, name: "Japan Visa", imagePath: "/images/japan-visa.png", slug: "japan-visa" }, // More descriptive placeholder
-{ id: 10, name: "Canada Visa", imagePath: "/images/canada-visa.png", slug: "canada-visa" }, // More descriptive placeholder
-{ id: 11, name: "USA Visa", imagePath: "/images/usa-visa.png", slug: "usa-visa" }, // More descriptive placeholder
-];
+const visaDestinations = [
+  { id: 1, name: "China Visa", imagePath: "/images/great-wall-china.png", slug: "china-visa" },
+  {
+    id: 2,
+    name: "Tourist Thailand Visa",
+    imagePath: "/images/tourist-thailand-visa.png",
+    slug: "tourist-thailand-visa",
+  },
+  {
+    id: 3,
+    name: "Destination Thailand Visa",
+    imagePath: "/images/destination_thailand.png",
+    slug: "destination-thailand-visa",
+  },
+  { id: 4, name: "Italy Visa", imagePath: "/images/italy-visa.png", slug: "italy-visa" },
+  { id: 5, name: "Hong Kong Visa", imagePath: "/images/hong-kong-visa.png", slug: "hong-kong-visa" },
+  { id: 6, name: "Saudi Visa", imagePath: "/images/saudi-visa.png", slug: "saudi-visa" },
+  { id: 7, name: "Korea Visa", imagePath: "/images/korea-visa.png", slug: "korea-visa" },
+  { id: 8, name: "Schengen Visa", imagePath: "/images/schengen.png", slug: "schengen-visa" },
+  { id: 9, name: "Japan Visa", imagePath: "/images/japan-visa.png", slug: "japan-visa" },
+  { id: 10, name: "Canada Visa", imagePath: "/images/canada-visa.png", slug: "canada-visa" },
+  { id: 11, name: "USA Visa", imagePath: "/images/usa-visa.png", slug: "usa-visa" },
+]
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
   const [currentStat, setCurrentStat] = useState(0)
+
   const stats = [
     { number: "7+", label: "Years of Excellence", icon: Award },
     { number: "500+", label: "Successful Businesses", icon: Building2 },
@@ -75,65 +104,44 @@ export default function HeroSection() {
         className="absolute bottom-20 left-20 w-96 h-96 bg-gradient-to-r from-blue-400/20 to-green-400/20 rounded-full blur-3xl animate-pulse"
         style={{ animationDelay: "1s" }}
       ></div>
-      <div
-        className="absolute top-32 left-1/4 animate-bounce"
-        style={{ animationDelay: "0.5s" }}
-      >
+      <div className="absolute top-32 left-1/4 animate-bounce" style={{ animationDelay: "0.5s" }}>
         <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-500 rounded-xl flex items-center justify-center opacity-30">
           <Building2 className="h-6 w-6 text-white" />
         </div>
       </div>
-      <div
-        className="absolute top-48 right-1/3 animate-bounce"
-        style={{ animationDelay: "1.5s" }}
-      >
+      <div className="absolute top-48 right-1/3 animate-bounce" style={{ animationDelay: "1.5s" }}>
         <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg flex items-center justify-center opacity-30">
           <Globe className="h-5 w-5 text-white" />
         </div>
       </div>
-      <div
-        className="absolute bottom-32 right-1/4 animate-bounce"
-        style={{ animationDelay: "2s" }}
-      >
+      <div className="absolute bottom-32 right-1/4 animate-bounce" style={{ animationDelay: "2s" }}>
         <div className="w-8 h-8 bg-gradient-to-r from-green-400 to-blue-400 rounded-lg flex items-center justify-center opacity-30">
           <CreditCard className="h-4 w-4 text-white" />
         </div>
       </div>
+
       <div className="container mx-auto px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          {/* Left Content - Reduced spacing */}
           <div
-            className={`space-y-8 transition-all duration-1000 ${
+            className={`space-y-6 transition-all duration-1000 ${
               isVisible ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={textVariants}
-              transition={{ delay: 0.1 }}
-            >
+            <motion.div initial="hidden" animate="visible" variants={textVariants} transition={{ delay: 0.1 }}>
               <div className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 animate-fade-in">
-                <Star
-                  className="mr-2 h-4 w-4 fill-current animate-spin"
-                  style={{ animationDuration: "3s" }}
-                />
+                <Star className="mr-2 h-4 w-4 fill-current animate-spin" style={{ animationDuration: "3s" }} />
                 #1 Trusted Business Consultancy in Philippines
               </div>
-              <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl leading-tight mt-6">
-                <span className="inline-block animate-fade-in-up">Your Gateway to</span>
+              <h1 className="text-2xl font-bold tracking-tight sm:text-4xl lg:text-4xl leading-tight mt-1">
+                <span className="inline-block animate-fade-in-up">Your Gateway to  Business Success</span>
                 <span
-                  className="block bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mt-2 animate-fade-in-up"
+                  className="block bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mt-1 animate-fade-in-up"
                   style={{ animationDelay: "0.2s" }}
                 >
-                  Business Success
+                   in the Philippines
                 </span>
-                <span
-                  className="block text-gray-900 mt-2 animate-fade-in-up"
-                  style={{ animationDelay: "0.4s" }}
-                >
-                  in the Philippines
-                </span>
+               
               </h1>
               <p
                 className={`text-lg text-gray-600 max-w-[600px] leading-relaxed transition-all duration-1000 ${
@@ -141,29 +149,79 @@ export default function HeroSection() {
                 }`}
                 style={{ transitionDelay: "0.6s" }}
               >
-                ABIC Consultancy provides comprehensive business solutions, visa services,
-                tax consulting, and HR outsourcing to help foreign entrepreneurs and
-                investors establish and grow their businesses in the Philippines.
+                ABIC Consultancy provides comprehensive business solutions, visa services, tax consulting, and HR
+                outsourcing to help foreign entrepreneurs and investors establish and grow their businesses in the
+                Philippines.
               </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center mb-2">
+                    <Building2 className="h-5 w-5 text-green-600 mr-2" />
+                    <h3 className="font-semibold text-gray-900">Business Setup</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">Complete business registration, permits, and compliance setup</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center mb-2">
+                    <Globe className="h-5 w-5 text-blue-600 mr-2" />
+                    <h3 className="font-semibold text-gray-900">Visa Services</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">International visa processing and immigration support</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center mb-2">
+                    <CreditCard className="h-5 w-5 text-green-600 mr-2" />
+                    <h3 className="font-semibold text-gray-900">Tax Consulting</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">Expert tax planning and compliance management</p>
+                </div>
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 border border-white/20">
+                  <div className="flex items-center mb-2">
+                    <HeadphonesIcon className="h-5 w-5 text-blue-600 mr-2" />
+                    <h3 className="font-semibold text-gray-900">HR Outsourcing</h3>
+                  </div>
+                  <p className="text-sm text-gray-600">Complete HR solutions and payroll management</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3 mt-6">
+                <div className="flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Free Consultation
+                </div>
+                <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Expert Guidance
+                </div>
+                <div className="flex items-center bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Fast Processing
+                </div>
+                <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  24/7 Support
+                </div>
+              </div>
             </motion.div>
-            {/* Transparent Launch Card */}
+
+            {/* Transparent Launch Card - Reduced spacing */}
             <motion.div
               initial="hidden"
               animate="visible"
               variants={cardVariants}
-              className={`mt-8 p-6 bg-white/20 backdrop-blur-xl rounded-xl shadow-xl border border-white/10 transition-all duration-1000 ${
+              className={`mt-6 p-5 bg-white/20 backdrop-blur-xl rounded-xl shadow-xl border border-white/10 transition-all duration-1000 ${
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
               }`}
               style={{ transitionDelay: "0.8s" }}
             >
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 leading-tight">
-                Launch your Business in the Philippines <br className="hidden sm:inline" /> as
-                Fast as{" "}
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2 leading-tight">
+                Launch your Business in the Philippines <br className="hidden sm:inline" /> as Fast as{" "}
                 <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
                   1 Month
                 </span>
               </h2>
-              <p className="text-lg text-gray-700 mb-6">
+              <p className="text-lg text-gray-700 mb-4">
                 Ready to get started? Schedule a free consultation with our experts.
               </p>
               <Link href="/consultation">
@@ -173,8 +231,9 @@ export default function HeroSection() {
                 </Button>
               </Link>
             </motion.div>
+
             <div
-              className={`grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 border-t border-gray-200 transition-all duration-1000 ${
+              className={`grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 transition-all duration-1000 ${
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
               }`}
               style={{ transitionDelay: "1s" }}
@@ -208,9 +267,10 @@ export default function HeroSection() {
               })}
             </div>
           </div>
-          {/* Right International Visa Cards Grid */}
+
+          {/* Right International Visa Cards Grid - More visa options */}
           <div
-            className={`grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 transition-all duration-1000 ${
+            className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 transition-all duration-1000 ${
               isVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
             }`}
             style={{ transitionDelay: "0.4s" }}
@@ -222,24 +282,22 @@ export default function HeroSection() {
                 whileInView="visible"
                 viewport={{ once: true, amount: 0.2 }}
                 variants={textVariants}
-                transition={{ delay: 0.1 * index }}
+                transition={{ delay: 0.05 * index }}
               >
-                <Card className="transform hover:scale-105 transition-all duration-500 shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col"> {/* Added p-0 to Card */}
+                <Card className="transform hover:scale-105 transition-all duration-500 shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col">
                   <Link href={`/services/visa/international/${visa.slug}`} passHref className="flex flex-col h-full">
-                    <div className="relative w-full h-[108px] overflow-hidden"> {/* Adjusted height */}
+                    <div className="relative w-full h-[90px] overflow-hidden">
                       <Image
                         src={visa.imagePath || "/placeholder.svg"}
                         alt={visa.name}
                         fill
-                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-                        style={{ objectFit: 'cover' }}
+                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
+                        style={{ objectFit: "cover" }}
                         className="transition-transform duration-300 group-hover:scale-110"
                       />
                     </div>
-                    <CardContent className="px-4 py-0 text-center flex items-center justify-center h-[45px]"> {/* Adjusted padding and min-height */}
-                      <h3 className="font-bold text-lg text-gray-900 line-clamp-2">
-                        {visa.name}
-                      </h3>
+                    <CardContent className="px-3 py-2 text-center flex items-center justify-center h-[40px]">
+                      <h3 className="font-bold text-sm text-gray-900 line-clamp-2">{visa.name}</h3>
                     </CardContent>
                   </Link>
                 </Card>
@@ -248,6 +306,7 @@ export default function HeroSection() {
           </div>
         </div>
       </div>
+
       <style jsx>{`
         @keyframes fade-in {
           from {

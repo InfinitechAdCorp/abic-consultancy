@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       <body>
         <div class="container">
           <div class="header">
-            <h1>📧 Message from ABIC Business</h1>
+            <h1>📧 Message from ABIC Consultancy</h1>
             <p>Personal response to your consultation request</p>
           </div>
           

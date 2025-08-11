@@ -326,7 +326,7 @@ export async function POST(request: NextRequest) {
         await transporter.sendMail({
           from: smtpFrom,
           to: data.email,
-          subject: '✅ Your Consultation Request Confirmed - ABIC Business',
+          subject: '✅ Your Consultation Request Confirmed - ABIC Consultancy',
           html: clientEmailHtml,
         })
       } else {

@@ -20,7 +20,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, Calendar, Star } from 'lucide-react'
+import { ChevronDown, Calendar, Star, Megaphone  } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -123,6 +123,11 @@ const systemItems = [
     url: "/admin/events",
     icon: Calendar,
   },
+    {
+    title: "Announcements",
+    url: "/admin/announcements",
+    icon: Megaphone ,
+  },
 ];
 
 export function AppSidebar() {
@@ -202,7 +207,7 @@ export function AppSidebar() {
             <Building2 className="h-5 w-5 text-white" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-base font-bold text-gray-900">ABIC Business</span>
+            <span className="text-base font-bold text-gray-900">ABIC Consultancy</span>
             <span className="text-sm text-gray-600">Services Portal</span>
           </div>
         </div>

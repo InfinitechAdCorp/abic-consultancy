@@ -1,6 +1,26 @@
-"use client";
+"use client"
+
+import type React from "react"
 import { useState, useEffect } from "react"
-import { User, Building2, Calendar, MessageSquare, CheckCircle, ArrowRight, Facebook, MessageCircle, Mail, Phone, Clock, ChevronLeft, ChevronRight, Briefcase, FileText, CreditCard, Award, RotateCcw, XCircle, Plane, HelpCircle, Globe, Plus, X, Loader2 } from 'lucide-react'
+import {
+  User,
+  Building2,
+  Calendar,
+  MessageSquare,
+  ArrowRight,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Briefcase,
+  FileText,
+  CreditCard,
+  Award,
+  RotateCcw,
+  Plane,
+  HelpCircle,
+  Globe,
+  Loader2,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -10,9 +30,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils";
-import { format } from "date-fns"
 import { useToast } from "@/components/ui/use-toast"
+// Import the new modal components
+import TermsOfServiceModal from "@/components/terms-of-service-modal"
+import PrivacyPolicyModal from "@/components/privacy-policy-modal"
 
 const serviceOptions = [
   {
@@ -20,57 +41,57 @@ const serviceOptions = [
     label: "Business Setup & Registration",
     icon: Building2,
     color: "from-blue-500 to-blue-600",
-    description: "Complete business registration and setup services"
+    description: "Complete business registration and setup services",
   },
   {
     value: "visa-services",
     label: "Visa & Immigration Services",
     icon: Plane,
     color: "from-purple-500 to-purple-600",
-    description: "Visa applications and immigration assistance"
+    description: "Visa applications and immigration assistance",
   },
   {
     value: "tax-accounting",
     label: "Tax & Accounting Services",
     icon: CreditCard,
     color: "from-green-500 to-green-600",
-    description: "Tax filing and accounting solutions"
+    description: "Tax filing and accounting solutions",
   },
   {
     value: "license-permit",
     label: "License & Permit Applications",
     icon: Award,
     color: "from-orange-500 to-orange-600",
-    description: "Professional license and permit processing"
+    description: "Professional license and permit processing",
   },
   {
     value: "business-renewal",
     label: "Business Renewal Services",
     icon: RotateCcw,
     color: "from-teal-500 to-teal-600",
-    description: "Renewal of business licenses and permits"
+    description: "Renewal of business licenses and permits",
   },
   {
     value: "amendment",
     label: "Business Amendment Services",
     icon: FileText,
     color: "from-indigo-500 to-indigo-600",
-    description: "Business document amendments and updates"
+    description: "Business document amendments and updates",
   },
   {
     value: "consultation",
     label: "General Business Consultation",
     icon: Briefcase,
     color: "from-pink-500 to-pink-600",
-    description: "Expert business advice and consultation"
+    description: "Expert business advice and consultation",
   },
   {
     value: "other",
     label: "Other Services",
     icon: HelpCircle,
     color: "from-gray-500 to-gray-600",
-    description: "Custom services tailored to your needs"
-  }
+    description: "Custom services tailored to your needs",
+  },
 ]
 
 const timeSlots = [
@@ -80,7 +101,7 @@ const timeSlots = [
   { value: "1pm-2pm", label: "1:00 PM" },
   { value: "2pm-3pm", label: "2:00 PM" },
   { value: "3pm-4pm", label: "3:00 PM" },
-  { value: "4pm-5pm", label: "4:00 PM" }
+  { value: "4pm-5pm", label: "4:00 PM" },
 ]
 
 interface Country {
@@ -128,8 +149,18 @@ const generateFullMonthCalendar = (year: number, month: number) => {
 
   const dates = []
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ]
 
   // Add empty cells for days before the first day of the month
@@ -141,23 +172,22 @@ const generateFullMonthCalendar = (year: number, month: number) => {
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day)
     const isPast = date < today && date.toDateString() !== today.toDateString()
-
     dates.push({
-      date: date.toISOString().split('T')[0],
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      date: date.toISOString().split("T")[0],
+      day: date.toLocaleDateString("en-US", { weekday: "short" }),
       dayNum: day.toString(),
-      month: date.toLocaleDateString('en-US', { month: 'short' }),
-      fullDate: date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+      month: date.toLocaleDateString("en-US", { month: "short" }),
+      fullDate: date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
       isToday: date.toDateString() === today.toDateString(),
       isPast: isPast,
-      isDisabled: isPast
+      isDisabled: isPast,
     })
   }
 
   return {
     dates,
     monthName: monthNames[month],
-    year
+    year,
   }
 }
 
@@ -175,7 +205,7 @@ export default function ConsultationForm() {
     preferredTime: "",
     message: "",
     agreeToTerms: false,
-    subscribeNewsletter: false
+    subscribeNewsletter: false,
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -185,10 +215,16 @@ export default function ConsultationForm() {
   const [loadingCountries, setLoadingCountries] = useState(true)
   const [floatingMenuOpen, setFloatingMenuOpen] = useState(false)
 
+  // State for modals
+  const [showTermsModal, setShowTermsModal] = useState(false)
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false)
+
   // Calendar state
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState(new Date().getMonth())
   const [currentCalendarYear, setCurrentCalendarYear] = useState(new Date().getFullYear())
-  const [calendarData, setCalendarData] = useState(generateFullMonthCalendar(new Date().getFullYear(), new Date().getMonth()))
+  const [calendarData, setCalendarData] = useState(
+    generateFullMonthCalendar(new Date().getFullYear(), new Date().getMonth()),
+  )
   const [timeSlotCounts, setTimeSlotCounts] = useState<Record<string, number>>({})
   const [loadingTimeSlots, setLoadingTimeSlots] = useState(false)
 
@@ -197,12 +233,11 @@ export default function ConsultationForm() {
       setLoadingTimeSlots(true)
       const response = await fetch(`/api/consultations/time-slots?date=${date}`)
       const result = await response.json()
-
       if (result.success) {
         setTimeSlotCounts(result.data)
       }
     } catch (error) {
-      console.error('Failed to fetch time slot availability:', error)
+      console.error("Failed to fetch time slot availability:", error)
     } finally {
       setLoadingTimeSlots(false)
     }
@@ -212,28 +247,26 @@ export default function ConsultationForm() {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const response = await fetch('https://restcountries.com/v3.1/all?fields=name,cca2,flag')
+        const response = await fetch("https://restcountries.com/v3.1/all?fields=name,cca2,flag")
         const data = await response.json()
-
         const formattedCountries: Country[] = data
           .map((country: any) => ({
             name: country.name.common,
             code: country.cca2,
-            flag: country.flag
+            flag: country.flag,
           }))
           .sort((a: Country, b: Country) => a.name.localeCompare(b.name))
 
         // Put Philippines at the top
-        const philippines = formattedCountries.find(c => c.code === 'PH')
-        const otherCountries = formattedCountries.filter(c => c.code !== 'PH')
-
+        const philippines = formattedCountries.find((c) => c.code === "PH")
+        const otherCountries = formattedCountries.filter((c) => c.code !== "PH")
         if (philippines) {
           setCountries([philippines, ...otherCountries])
         } else {
           setCountries(formattedCountries)
         }
       } catch (error) {
-        console.error('Failed to fetch countries:', error)
+        console.error("Failed to fetch countries:", error)
         // Fallback to basic list
         setCountries([
           { name: "Philippines", code: "PH", flag: "🇵🇭" },
@@ -243,7 +276,7 @@ export default function ConsultationForm() {
           { name: "United Kingdom", code: "GB", flag: "🇬🇧" },
           { name: "Singapore", code: "SG", flag: "🇸🇬" },
           { name: "Japan", code: "JP", flag: "🇯🇵" },
-          { name: "South Korea", code: "KR", flag: "🇰🇷" }
+          { name: "South Korea", code: "KR", flag: "🇰🇷" },
         ])
       } finally {
         setLoadingCountries(false)
@@ -287,7 +320,6 @@ export default function ConsultationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
     if (!validateForm()) {
       toast({
         variant: "destructive",
@@ -296,29 +328,30 @@ export default function ConsultationForm() {
       })
       return
     }
+
     setIsSubmitting(true)
     try {
       // Submit to Next.js API route (which handles Laravel backend + email)
-      const response = await fetch('/api/consultations', {
-        method: 'POST',
+      const response = await fetch("/api/consultations", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       })
+
       const result = await response.json()
+
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to submit consultation')
+        throw new Error(result.message || "Failed to submit consultation")
       }
 
       console.log("Form submitted:", formData)
-
       toast({
         variant: "success",
         title: "Success! 🎉",
         description: "Your consultation request has been submitted successfully and email notifications sent!",
       })
-
       setIsSubmitted(true)
     } catch (error) {
       console.error("Error submitting form:", error)
@@ -333,10 +366,10 @@ export default function ConsultationForm() {
   }
 
   const handleInputChange = (field: keyof ConsultationFormData, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData((prev) => ({ ...prev, [field]: value }))
     // Only clear errors for fields that exist in FormErrors
     if (field in errors) {
-      setErrors(prev => ({ ...prev, [field]: undefined }))
+      setErrors((prev) => ({ ...prev, [field]: undefined }))
     }
   }
 
@@ -346,12 +379,12 @@ export default function ConsultationForm() {
 
   const getSelectedDateDisplay = () => {
     if (!formData.preferredDate) return ""
-    const selectedDate = calendarData.dates.find(d => d && d.date === formData.preferredDate)
+    const selectedDate = calendarData.dates.find((d) => d && d.date === formData.preferredDate)
     return selectedDate ? selectedDate.fullDate : ""
   }
 
-  const navigateCalendar = (direction: 'prev' | 'next') => {
-    if (direction === 'next') {
+  const navigateCalendar = (direction: "prev" | "next") => {
+    if (direction === "next") {
       if (currentCalendarMonth === 11) {
         setCurrentCalendarMonth(0)
         setCurrentCalendarYear(currentCalendarYear + 1)
@@ -372,22 +405,18 @@ export default function ConsultationForm() {
     const today = new Date()
     const currentMonth = today.getMonth()
     const currentYear = today.getFullYear()
-
     return !(currentCalendarYear === currentYear && currentCalendarMonth === currentMonth)
   }
 
   return (
     <>
-      {/* Responsive Floating Action Buttons */}
-     
       <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header with ABIC branding */}
-
-        {/* Form Card */}
         <Card className="bg-white shadow-2xl border-0 overflow-hidden">
           <div className="h-2 lg:h-3 bg-gradient-to-r from-green-400 via-blue-500 to-purple-600"></div>
           <CardHeader className="text-center pb-4 lg:pb-6 bg-gradient-to-r from-green-50 to-blue-50">
-            <CardTitle className="text-2xl lg:text-3xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Consultation Details</CardTitle>
+            <CardTitle className="text-2xl lg:text-3xl bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              Consultation Details
+            </CardTitle>
             <CardDescription className="text-gray-600 text-base lg:text-lg px-4">
               Fill out the form below and we'll get back to you within 24 hours
             </CardDescription>
@@ -428,20 +457,26 @@ export default function ConsultationForm() {
                 <TabsContent value="personal" className="space-y-6 lg:space-y-8">
                   {/* Country Field - Full Width at Top */}
                   <div className="space-y-3">
-                    <Label htmlFor="country" className="text-base lg:text-lg font-semibold text-gray-700">Country *</Label>
+                    <Label htmlFor="country" className="text-base lg:text-lg font-semibold text-gray-700">
+                      Country *
+                    </Label>
                     <Select
                       value={formData.country}
                       onValueChange={(value) => handleInputChange("country", value)}
                       disabled={loadingCountries}
                     >
-                      <SelectTrigger className={`h-12 lg:h-14 text-base lg:text-lg rounded-xl border-2 transition-all duration-300 ${
-                        errors.country
-                          ? "border-red-500 focus:border-red-500"
-                          : "border-gray-200 focus:border-blue-500"
-                      }`}>
+                      <SelectTrigger
+                        className={`h-12 lg:h-14 text-base lg:text-lg rounded-xl border-2 transition-all duration-300 ${
+                          errors.country
+                            ? "border-red-500 focus:border-red-500"
+                            : "border-gray-200 focus:border-blue-500"
+                        }`}
+                      >
                         <div className="flex items-center gap-2">
                           <Globe className="w-4 h-4 lg:w-5 lg:h-5 text-gray-500" />
-                          <SelectValue placeholder={loadingCountries ? "Loading countries..." : "Select your country"} />
+                          <SelectValue
+                            placeholder={loadingCountries ? "Loading countries..." : "Select your country"}
+                          />
                         </div>
                       </SelectTrigger>
                       <SelectContent>
@@ -455,13 +490,13 @@ export default function ConsultationForm() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.country && (
-                      <p className="text-red-500 text-sm font-medium">{errors.country}</p>
-                    )}
+                    {errors.country && <p className="text-red-500 text-sm font-medium">{errors.country}</p>}
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     <div className="space-y-3">
-                      <Label htmlFor="firstName" className="text-base lg:text-lg font-semibold text-gray-700">First Name *</Label>
+                      <Label htmlFor="firstName" className="text-base lg:text-lg font-semibold text-gray-700">
+                        First Name *
+                      </Label>
                       <Input
                         id="firstName"
                         value={formData.firstName}
@@ -473,13 +508,12 @@ export default function ConsultationForm() {
                         }`}
                         placeholder="Enter your first name"
                       />
-                      {errors.firstName && (
-                        <p className="text-red-500 text-sm font-medium">{errors.firstName}</p>
-                      )}
+                      {errors.firstName && <p className="text-red-500 text-sm font-medium">{errors.firstName}</p>}
                     </div>
-
                     <div className="space-y-3">
-                      <Label htmlFor="lastName" className="text-base lg:text-lg font-semibold text-gray-700">Last Name *</Label>
+                      <Label htmlFor="lastName" className="text-base lg:text-lg font-semibold text-gray-700">
+                        Last Name *
+                      </Label>
                       <Input
                         id="lastName"
                         value={formData.lastName}
@@ -491,14 +525,14 @@ export default function ConsultationForm() {
                         }`}
                         placeholder="Enter your last name"
                       />
-                      {errors.lastName && (
-                        <p className="text-red-500 text-sm font-medium">{errors.lastName}</p>
-                      )}
+                      {errors.lastName && <p className="text-red-500 text-sm font-medium">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
                     <div className="space-y-3">
-                      <Label htmlFor="email" className="text-base lg:text-lg font-semibold text-gray-700">Email Address *</Label>
+                      <Label htmlFor="email" className="text-base lg:text-lg font-semibold text-gray-700">
+                        Email Address *
+                      </Label>
                       <Input
                         id="email"
                         type="email"
@@ -511,13 +545,12 @@ export default function ConsultationForm() {
                         }`}
                         placeholder="your.email@example.com"
                       />
-                      {errors.email && (
-                        <p className="text-red-500 text-sm font-medium">{errors.email}</p>
-                      )}
+                      {errors.email && <p className="text-red-500 text-sm font-medium">{errors.email}</p>}
                     </div>
-
                     <div className="space-y-3">
-                      <Label htmlFor="phone" className="text-base lg:text-lg font-semibold text-gray-700">Phone Number *</Label>
+                      <Label htmlFor="phone" className="text-base lg:text-lg font-semibold text-gray-700">
+                        Phone Number *
+                      </Label>
                       <Input
                         id="phone"
                         value={formData.phone}
@@ -529,9 +562,7 @@ export default function ConsultationForm() {
                         }`}
                         placeholder="+63 XXX XXX XXXX"
                       />
-                      {errors.phone && (
-                        <p className="text-red-500 text-sm font-medium">{errors.phone}</p>
-                      )}
+                      {errors.phone && <p className="text-red-500 text-sm font-medium">{errors.phone}</p>}
                     </div>
                   </div>
                   <div className="flex justify-end pt-4 lg:pt-6">
@@ -545,9 +576,10 @@ export default function ConsultationForm() {
                   </div>
                 </TabsContent>
                 <TabsContent value="service" className="space-y-6 lg:space-y-8">
-
                   <div className="space-y-4">
-                    <Label className="text-lg lg:text-xl font-bold text-gray-800">What service are you interested in? *</Label>
+                    <Label className="text-lg lg:text-xl font-bold text-gray-800">
+                      What service are you interested in? *
+                    </Label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                       {serviceOptions.map((service) => {
                         const IconComponent = service.icon
@@ -563,20 +595,24 @@ export default function ConsultationForm() {
                           >
                             <CardContent className="p-3 lg:p-4">
                               <div className="flex flex-col items-center text-center gap-2 lg:gap-3">
-                                <div className={`p-2 rounded-lg ${
-                                  formData.serviceType === service.value
-                                    ? "bg-white/20"
-                                    : `bg-gradient-to-r ${service.color} text-white`
-                                }`}>
+                                <div
+                                  className={`p-2 rounded-lg ${
+                                    formData.serviceType === service.value
+                                      ? "bg-white/20"
+                                      : `bg-gradient-to-r ${service.color} text-white`
+                                  }`}
+                                >
                                   <IconComponent className="w-4 h-4 lg:w-5 lg:h-5" />
                                 </div>
                                 <div>
-                                  <h3 className="font-semibold text-xs lg:text-sm mb-1 leading-tight">{service.label}</h3>
-                                  <p className={`text-xs leading-tight ${
-                                    formData.serviceType === service.value
-                                      ? "text-white/90"
-                                      : "text-gray-600"
-                                  }`}>
+                                  <h3 className="font-semibold text-xs lg:text-sm mb-1 leading-tight">
+                                    {service.label}
+                                  </h3>
+                                  <p
+                                    className={`text-xs leading-tight ${
+                                      formData.serviceType === service.value ? "text-white/90" : "text-gray-600"
+                                    }`}
+                                  >
                                     {service.description}
                                   </p>
                                 </div>
@@ -586,14 +622,14 @@ export default function ConsultationForm() {
                         )
                       })}
                     </div>
-                    {errors.serviceType && (
-                      <p className="text-red-500 text-sm font-medium">{errors.serviceType}</p>
-                    )}
+                    {errors.serviceType && <p className="text-red-500 text-sm font-medium">{errors.serviceType}</p>}
                   </div>
                   {/* Additional field for "Other Services" */}
                   {formData.serviceType === "other" && (
                     <div className="space-y-3 bg-gradient-to-r from-gray-50 to-blue-50 p-4 lg:p-6 rounded-xl border-2 border-gray-200">
-                      <Label htmlFor="otherServiceDetails" className="text-base lg:text-lg font-semibold text-gray-700">Please describe the service you need *</Label>
+                      <Label htmlFor="otherServiceDetails" className="text-base lg:text-lg font-semibold text-gray-700">
+                        Please describe the service you need *
+                      </Label>
                       <Textarea
                         id="otherServiceDetails"
                         value={formData.otherServiceDetails}
@@ -618,29 +654,50 @@ export default function ConsultationForm() {
                       onValueChange={(value) => handleInputChange("consultationType", value)}
                       className="grid grid-cols-1 sm:grid-cols-3 gap-3 lg:gap-4"
                     >
-                      <div className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
-                        formData.consultationType === "online"
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
+                      <div
+                        className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
+                          formData.consultationType === "online"
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
                         <RadioGroupItem value="online" id="online" className="text-blue-500" />
-                        <Label htmlFor="online" className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base">Online (Video Call)</Label>
+                        <Label
+                          htmlFor="online"
+                          className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base"
+                        >
+                          Online (Video Call)
+                        </Label>
                       </div>
-                      <div className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
-                        formData.consultationType === "phone"
-                          ? "border-green-500 bg-green-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
+                      <div
+                        className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
+                          formData.consultationType === "phone"
+                            ? "border-green-500 bg-green-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
                         <RadioGroupItem value="phone" id="phone" className="text-green-500" />
-                        <Label htmlFor="phone" className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base">Phone Call</Label>
+                        <Label
+                          htmlFor="phone"
+                          className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base"
+                        >
+                          Phone Call
+                        </Label>
                       </div>
-                      <div className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
-                        formData.consultationType === "office"
-                          ? "border-purple-500 bg-purple-50"
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
+                      <div
+                        className={`flex items-center space-x-3 p-3 lg:p-4 rounded-xl border-2 transition-all duration-300 ${
+                          formData.consultationType === "office"
+                            ? "border-purple-500 bg-purple-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
                         <RadioGroupItem value="office" id="office" className="text-purple-500" />
-                        <Label htmlFor="office" className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base">In-Person (Office Visit)</Label>
+                        <Label
+                          htmlFor="office"
+                          className="font-semibold text-gray-700 cursor-pointer text-sm lg:text-base"
+                        >
+                          In-Person (Office Visit)
+                        </Label>
                       </div>
                     </RadioGroup>
                   </div>
@@ -673,32 +730,27 @@ export default function ConsultationForm() {
                         </div>
                       )}
                     </div>
-
                     {/* Calendar Header with Navigation */}
                     <div className="flex items-center justify-between bg-gradient-to-r from-green-50 to-blue-50 p-3 lg:p-4 rounded-xl">
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => navigateCalendar('prev')}
+                        onClick={() => navigateCalendar("prev")}
                         disabled={!canNavigatePrev()}
                         className="flex items-center gap-2 hover:bg-white transition-all duration-300 text-sm"
                       >
                         <ChevronLeft className="w-3 h-3 lg:w-4 lg:h-4" />
                         <span className="hidden sm:inline">Previous</span>
                       </Button>
-
-
                       <h3 className="text-lg lg:text-xl font-bold text-gray-800">
                         {calendarData.monthName} {calendarData.year}
                       </h3>
-
-
                       <Button
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => navigateCalendar('next')}
+                        onClick={() => navigateCalendar("next")}
                         className="flex items-center gap-2 hover:bg-white transition-all duration-300 text-sm"
                       >
                         <span className="hidden sm:inline">Next</span>
@@ -709,21 +761,18 @@ export default function ConsultationForm() {
                     <div className="bg-white border-2 border-gray-200 rounded-xl p-3 lg:p-4">
                       {/* Day Headers */}
                       <div className="grid grid-cols-7 gap-1 lg:gap-2 mb-3 lg:mb-4">
-                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
                           <div key={day} className="text-center text-xs lg:text-sm font-semibold text-gray-600 py-2">
                             {day}
                           </div>
                         ))}
                       </div>
-
                       {/* Calendar Dates */}
                       <div className="grid grid-cols-7 gap-1 lg:gap-2">
                         {calendarData.dates.map((dateOption, index) => {
                           if (!dateOption) {
                             return <div key={index} className="h-10 lg:h-12"></div>
                           }
-
-
                           return (
                             <Button
                               key={dateOption.date}
@@ -739,7 +788,9 @@ export default function ConsultationForm() {
                                       ? "opacity-40 cursor-not-allowed bg-gray-100 border-gray-200 hover:scale-100"
                                       : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                               }`}
-                              onClick={() => !dateOption.isDisabled && handleInputChange("preferredDate", dateOption.date)}
+                              onClick={() =>
+                                !dateOption.isDisabled && handleInputChange("preferredDate", dateOption.date)
+                              }
                             >
                               <span className="font-bold">{dateOption.dayNum}</span>
                               {dateOption.isToday && !dateOption.isDisabled && (
@@ -750,10 +801,7 @@ export default function ConsultationForm() {
                         })}
                       </div>
                     </div>
-
-                    {errors.preferredDate && (
-                      <p className="text-red-500 text-sm font-medium">{errors.preferredDate}</p>
-                    )}
+                    {errors.preferredDate && <p className="text-red-500 text-sm font-medium">{errors.preferredDate}</p>}
                   </div>
                   {/* Time Selection */}
                   <div className="space-y-4 lg:space-y-6">
@@ -771,8 +819,6 @@ export default function ConsultationForm() {
                         const bookingCount = timeSlotCounts[slot.value] || 0
                         const isFullyBooked = bookingCount >= 10
                         const spotsLeft = Math.max(0, 10 - bookingCount)
-
-
                         return (
                           <Button
                             key={slot.value}
@@ -803,9 +849,7 @@ export default function ConsultationForm() {
                         )
                       })}
                     </div>
-                    {errors.preferredTime && (
-                      <p className="text-red-500 text-sm font-medium">{errors.preferredTime}</p>
-                    )}
+                    {errors.preferredTime && <p className="text-red-500 text-sm font-medium">{errors.preferredTime}</p>}
                   </div>
                   <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 lg:pt-6">
                     <Button
@@ -827,7 +871,9 @@ export default function ConsultationForm() {
                 </TabsContent>
                 <TabsContent value="additional" className="space-y-6 lg:space-y-8">
                   <div className="space-y-4">
-                    <Label htmlFor="message" className="text-lg lg:text-xl font-bold text-gray-800">Tell us more about your needs (Optional)</Label>
+                    <Label htmlFor="message" className="text-lg lg:text-xl font-bold text-gray-800">
+                      Tell us more about your needs (Optional)
+                    </Label>
                     <Textarea
                       id="message"
                       value={formData.message}
@@ -846,8 +892,21 @@ export default function ConsultationForm() {
                         className={`mt-1 ${errors.agreeToTerms ? "border-red-500" : "border-gray-300"}`}
                       />
                       <Label htmlFor="agreeToTerms" className="text-base lg:text-lg leading-relaxed cursor-pointer">
-                        I agree to the <a href="/terms" className="text-blue-600 hover:underline font-semibold">Terms of Service</a> and
-                        <a href="/privacy" className="text-blue-600 hover:underline font-semibold ml-1">Privacy Policy</a> *
+                        I agree to the{" "}
+                        <span
+                          onClick={() => setShowTermsModal(true)}
+                          className="text-blue-600 hover:underline font-semibold cursor-pointer"
+                        >
+                          Terms of Service
+                        </span>{" "}
+                        and{" "}
+                        <span
+                          onClick={() => setShowPrivacyModal(true)}
+                          className="text-blue-600 hover:underline font-semibold cursor-pointer"
+                        >
+                          Privacy Policy
+                        </span>{" "}
+                        *
                       </Label>
                     </div>
                     {errors.agreeToTerms && (
@@ -860,7 +919,10 @@ export default function ConsultationForm() {
                         onCheckedChange={(checked) => handleInputChange("subscribeNewsletter", checked as boolean)}
                         className="mt-1 border-gray-300"
                       />
-                      <Label htmlFor="subscribeNewsletter" className="text-base lg:text-lg leading-relaxed cursor-pointer">
+                      <Label
+                        htmlFor="subscribeNewsletter"
+                        className="text-base lg:text-lg leading-relaxed cursor-pointer"
+                      >
                         Subscribe to our newsletter for business tips and updates
                       </Label>
                     </div>
@@ -898,6 +960,9 @@ export default function ConsultationForm() {
           </CardContent>
         </Card>
       </div>
+      {/* Modals for Terms of Service and Privacy Policy */}
+      <TermsOfServiceModal isOpen={showTermsModal} onClose={() => setShowTermsModal(false)} />
+      <PrivacyPolicyModal isOpen={showPrivacyModal} onClose={() => setShowPrivacyModal(false)} />
     </>
   )
 }

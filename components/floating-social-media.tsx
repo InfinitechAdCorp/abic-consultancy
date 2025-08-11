@@ -1,20 +1,19 @@
 "use client"
 
-import { Facebook, Twitter, Linkedin, Instagram, MessageCircle, Mail, Phone } from 'lucide-react'
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-import { useMediaQuery } from '@/hooks/use-media-query' // Ensure this hook is available
+import { Facebook, MessageCircle, Mail, Phone, Send } from "lucide-react"
+import { useState } from "react"
+import { usePathname } from "next/navigation"
+import { useMediaQuery } from "@/hooks/use-media-query" // Ensure this hook is available
 
 export default function FloatingSocialMedia() {
   const pathname = usePathname()
-  
+  const [isExpanded, setIsExpanded] = useState(false)
+  const isMobile = useMediaQuery("(max-width: 768px)") // Detects if screen width is 768px or less
+
   // Don't show on admin pages
-  if (pathname?.startsWith('/admin')) {
+  if (pathname?.startsWith("/admin")) {
     return null
   }
-
-  const [isExpanded, setIsExpanded] = useState(false)
-  const isMobile = useMediaQuery('(max-width: 768px)') // Detects if screen width is 768px or less
 
   const socialLinks = [
     {
@@ -23,7 +22,7 @@ export default function FloatingSocialMedia() {
       label: "Facebook",
       bgColorClass: "bg-blue-600", // Default background color
       iconColorClass: "text-white", // Default icon color
-      hoverEffectClass: "hover:brightness-90" // Subtle hover effect
+      hoverEffectClass: "hover:brightness-90", // Subtle hover effect
     },
     {
       icon: MessageCircle,
@@ -31,7 +30,15 @@ export default function FloatingSocialMedia() {
       label: "WhatsApp",
       bgColorClass: "bg-green-600",
       iconColorClass: "text-white",
-      hoverEffectClass: "hover:brightness-90"
+      hoverEffectClass: "hover:brightness-90",
+    },
+    {
+      icon: Send,
+      href: "https://t.me/yourusername", // Replace with your actual Telegram username or link
+      label: "Telegram",
+      bgColorClass: "bg-sky-500",
+      iconColorClass: "text-white",
+      hoverEffectClass: "hover:brightness-90",
     },
     {
       icon: Mail,
@@ -39,7 +46,7 @@ export default function FloatingSocialMedia() {
       label: "Email",
       bgColorClass: "bg-red-600",
       iconColorClass: "text-white",
-      hoverEffectClass: "hover:brightness-90"
+      hoverEffectClass: "hover:brightness-90",
     },
     {
       icon: Phone,
@@ -47,8 +54,8 @@ export default function FloatingSocialMedia() {
       label: "Call Us",
       bgColorClass: "bg-blue-500",
       iconColorClass: "text-white",
-      hoverEffectClass: "hover:brightness-90"
-    }
+      hoverEffectClass: "hover:brightness-90",
+    },
   ]
 
   // Render different layouts based on screen size
@@ -56,7 +63,9 @@ export default function FloatingSocialMedia() {
     // Mobile layout: expandable/collapsible
     return (
       <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
-        <div className={`flex flex-col items-center space-y-3 transition-all duration-500 ${isExpanded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-full'}`}>
+        <div
+          className={`flex flex-col items-center space-y-3 transition-all duration-500 ${isExpanded ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"}`}
+        >
           {socialLinks.map((social, index) => {
             const Icon = social.icon
             return (
@@ -69,7 +78,7 @@ export default function FloatingSocialMedia() {
                 className={`w-14 h-14 shadow-lg rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 group ${social.bgColorClass} ${social.hoverEffectClass}`}
                 title={social.label}
                 style={{
-                  animationDelay: `${index * 0.1}s`
+                  animationDelay: `${index * 0.1}s`,
                 }}
               >
                 {/* Increased icon size to h-7 w-7, applied iconColorClass */}
@@ -87,7 +96,7 @@ export default function FloatingSocialMedia() {
           className="w-14 h-14 bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 mt-4"
           title="Social Media"
         >
-          <div className={`transform transition-transform duration-300 ${isExpanded ? 'rotate-45' : 'rotate-0'}`}>
+          <div className={`transform transition-transform duration-300 ${isExpanded ? "rotate-45" : "rotate-0"}`}>
             {isExpanded ? (
               <div className="w-6 h-0.5 bg-white relative">
                 <div className="w-6 h-0.5 bg-white absolute top-0 rotate-90"></div>
