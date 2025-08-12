@@ -174,7 +174,7 @@ export default function AboutPage() {
         <div className="absolute inset-0 opacity-5 bg-[url('/subtle-pattern.png')] bg-repeat animate-pulse-subtle animation-delay-1000"></div>
         <div className="container mx-auto px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
-            <div className={`text-center mb-12 transition-all duration-1000 ${isVisibleValues ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+            <div className={`text-center transition-all duration-1000 ${isVisibleValues ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
               <h2 className="text-3xl font-bold mb-4">
                 Our Core <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Values</span>
               </h2>

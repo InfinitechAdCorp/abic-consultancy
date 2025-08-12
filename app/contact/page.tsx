@@ -36,25 +36,25 @@ export default function ContactPage() {
     {
       icon: MapPin,
       title: "Office Address",
-      details: ["Unit 402, Campos Rueda Building, Urban Ave. Makati City"],
+      details: ["Makati City, Philippines", "Business District Area"],
       color: "from-green-500 to-green-600",
     },
     {
       icon: Phone,
       title: "Phone Number",
-      details: ["82405150", "+63 915-580-0515"],
+      details: ["+63 (2) 8123-4567", "+63 917-123-4567"],
       color: "from-blue-500 to-blue-600",
     },
     {
       icon: Mail,
       title: "Email Address",
-      details: ["zoe@abicph.com"],
+      details: ["info@abic-consultancy.com", "support@abic-consultancy.com"],
       color: "from-green-400 to-blue-500",
     },
     {
       icon: Clock,
       title: "Business Hours",
-      details: ["Mon - Fri: 9:00 AM - 6:00 PM"],
+      details: ["Mon - Fri: 9:00 AM - 6:00 PM", "Sat: 9:00 AM - 1:00 PM"],
       color: "from-blue-400 to-green-500",
     },
   ]
@@ -204,7 +204,7 @@ export default function ContactPage() {
         </div>
       </section>
       {/* Contact Information */}
-      <section
+      {/* <section
         id="contact-info-section"
         className="relative py-20 bg-gradient-to-br from-purple-50 via-blue-50 to-green-50"
       >
@@ -250,7 +250,7 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
       {/* Contact Form & Map */}
       <section className="relative py-20 bg-gradient-to-br from-green-50 via-purple-50 to-blue-50">
         <div className="absolute inset-0 opacity-5 bg-[url('/subtle-pattern.png')] bg-repeat animate-pulse-subtle animation-delay-1000"></div>
