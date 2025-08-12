@@ -1,21 +1,15 @@
 import type React from "react"
 import type { Metadata } from "next/types"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Geist, Geist_Mono } from 'next/font/google' // Reverted to user's specified import
 import { LanguageProvider } from "@/contexts/language-context"
 import FloatingSocialMedia from "@/components/floating-social-media"
 import "./globals.css"
 import { Toaster } from "@/components/ui/toaster"
 import { ChatbotWrapper } from "@/components/chatbot-wrapper"
+import { AuthProvider } from "@/components/auth-provider" // Keep AuthProvider import
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-})
+const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] }) // Reverted to user's specified declaration
+const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] }) // Reverted to user's specified declaration
 
 export const metadata: Metadata = {
   title: "ABIC Consultancy - Your Gateway to Business Success in the Philippines",
@@ -64,9 +58,9 @@ export default function RootLayout({
         <link rel="manifest" href="/manifest.json" />
         {/* Apple Touch Icon for iOS Safari */}
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
+          <link rel="icon" href="/abic-logo.png" />
         {/* Theme color for mobile browsers */}
         <meta name="theme-color" content="#0D9488" />
-
         {/* CSS to hide Google Translate UI elements */}
         <style>{`
           .goog-te-banner-frame.skiptranslate {
@@ -128,6 +122,11 @@ export default function RootLayout({
             margin-top: 0 !important;
             padding-top: 0 !important;
           }
+          html {
+            font-family: ${geistSans.style.fontFamily};
+            --font-sans: ${geistSans.variable};
+            --font-mono: ${geistMono.variable};
+          }
         `}</style>
         {/* Structured Data for SEO */}
         <script
@@ -162,13 +161,17 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <LanguageProvider>
-          {children}
-          {/* Floating Social Media - Only shows on mobile */}
-          <FloatingSocialMedia />
-          <Toaster /> {/* Place the Toaster component here */}
-          <ChatbotWrapper /> {/* Use the ChatbotWrapper component here */}
-        </LanguageProvider>
+        <AuthProvider>
+          {" "}
+          {/* AuthProvider remains */}
+          <LanguageProvider>
+            {children}
+            {/* Floating Social Media - Only shows on mobile */}
+            <FloatingSocialMedia />
+            <Toaster /> {/* Place the Toaster component here */}
+            <ChatbotWrapper /> {/* Use the ChatbotWrapper component here */}
+          </LanguageProvider>
+        </AuthProvider>
       </body>
     </html>
   )

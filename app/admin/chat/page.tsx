@@ -70,7 +70,21 @@ export default function AdminChatDashboard() {
         throw new Error('Failed to fetch messages');
       }
       const data: Message[] = await response.json();
-      setMessages(data);
+      
+      // Debug: Log the raw data to see the timestamps
+      console.log('Raw messages from API:', data.map(m => ({ id: m.id, created_at: m.created_at, content: m.content.substring(0, 50) })));
+      
+      // Sort messages by created_at to ensure chronological order (oldest first)
+      const sortedMessages = data.sort((a, b) => {
+        const timeA = new Date(a.created_at).getTime();
+        const timeB = new Date(b.created_at).getTime();
+        console.log(`Comparing: ${a.created_at} (${timeA}) vs ${b.created_at} (${timeB})`);
+        return timeA - timeB;
+      });
+      
+      console.log('Sorted messages:', sortedMessages.map(m => ({ id: m.id, created_at: m.created_at, content: m.content.substring(0, 50) })));
+      
+      setMessages(sortedMessages);
     } catch (error) {
       console.error('Error fetching messages:', error);
       toast({
@@ -118,6 +132,7 @@ export default function AdminChatDashboard() {
       created_at: new Date().toISOString(),
     };
 
+    // Add new message to the end (bottom) of the messages array
     setMessages((prev) => [...prev, newMessage]);
     setInputMessage('');
     setIsLoading(true);

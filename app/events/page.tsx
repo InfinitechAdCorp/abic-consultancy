@@ -143,22 +143,7 @@ export default function EventsPage() {
         </div>
       </section>
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-purple-50 via-blue-50 to-green-50">
-        <div className="container mx-auto px-6 lg:px-8">
-          <div className="text-center animate-fade-in-up">
-            <h2 className="text-3xl font-bold mb-4">Don't Miss Out on Our Next Event!</h2>
-            <p className="text-lg text-gray-700 mb-8 max-w-2xl mx-auto">
-              Stay updated on our latest events and opportunities by subscribing to our newsletter.
-            </p>
-            <Link href="#events-list">
-              <Button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 text-base font-semibold transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
-                View All Events
-                <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </section>
+      
       <Footer />
       {/* Custom CSS for animations */}
       <style jsx>{`

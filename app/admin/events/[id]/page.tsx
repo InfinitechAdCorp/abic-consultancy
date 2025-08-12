@@ -11,14 +11,14 @@ import { Loader2, ArrowLeft, Edit, Trash2, X } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
 import Image from 'next/image'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { MultiImageUploadDropzone, ExistingImage } from '@/components/multi-image-upload-dropzone' // Import new component
+import { MultiImageUploadDropzone, ExistingImage } from '@/components/multi-image-upload-dropzone'
 
 interface Event {
   id: number;
   title: string;
   location: string;
   description: string;
-  images: ExistingImage[]; // Array of image objects
+  images: ExistingImage[];
   created_at: string;
   updated_at: string;
 }
@@ -42,22 +42,68 @@ export default function EventDetailsPage() {
   const fetchEvent = useCallback(async () => {
     setLoading(true);
     setError(null);
+    
     try {
-      const response = await fetch(`/api/events/${id}`);
-      const result = await response.json();
+      console.log(`Fetching event with ID: ${id}`);
+      const response = await fetch(`/api/events/${id}`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response content-type: ${response.headers.get('content-type')}`);
+
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to fetch event.');
+        // Try to get error details if response is not ok
+        let errorMessage = `HTTP Error: ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorResult = await response.json();
+            errorMessage = errorResult.message || errorMessage;
+          } else {
+            const errorText = await response.text();
+            console.error('Non-JSON error response:', errorText);
+            errorMessage = `Server returned non-JSON response: ${response.status}`;
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
       }
+
+      // Check if response has JSON content
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const responseText = await response.text();
+        console.error('Server returned non-JSON response:', responseText);
+        throw new Error('Server returned invalid response format');
+      }
+
+      const result = await response.json();
+      console.log('Fetched event:', result);
+      
       setEvent(result);
-      setEditFormData(result); // Initialize edit form with fetched data
+      setEditFormData(result);
     } catch (err: any) {
       console.error('Error fetching event:', err);
-      setError(err.message || 'Failed to load event.');
+      const errorMessage = err.message || 'Failed to load event.';
+      setError(errorMessage);
       setEvent(null);
+      
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage
+      });
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, toast]);
 
   useEffect(() => {
     if (id) {
@@ -82,46 +128,77 @@ export default function EventDetailsPage() {
     setIsSubmitting(true)
     setError(null);
 
-    const data = new FormData()
-    data.append('title', editFormData.title || '')
-    data.append('location', editFormData.location || '')
-    data.append('description', editFormData.description || '')
-
-    // Append new files
-    newFiles.forEach((file, index) => {
-      data.append(`images[${index}]`, file)
-    })
-
-    // Append image IDs to delete
-    imagesToDelete.forEach((imageId) => {
-      data.append('images_to_delete[]', String(imageId))
-    })
-
     try {
+      const data = new FormData()
+      data.append('title', editFormData.title || '')
+      data.append('location', editFormData.location || '')
+      data.append('description', editFormData.description || '')
+
+      // Append new files
+      newFiles.forEach((file, index) => {
+        data.append(`images[${index}]`, file)
+      })
+
+      // Append image IDs to delete
+      imagesToDelete.forEach((imageId) => {
+        data.append('images_to_delete[]', String(imageId))
+      })
+
+      console.log('Submitting form data for event update...');
+      
       const response = await fetch(`/api/events/${event.id}`, {
-        method: 'PUT', // Will be handled by Next.js API route as POST with X-HTTP-Method-Override
+        method: 'POST', // Using POST since we're handling FormData
         body: data,
       })
 
-      const result = await response.json()
+      console.log(`Update response status: ${response.status}`);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to update event.')
+        let errorMessage = `HTTP Error: ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorResult = await response.json();
+            errorMessage = errorResult.message || errorMessage;
+          } else {
+            const errorText = await response.text();
+            console.error('Non-JSON error response:', errorText);
+            errorMessage = `Server returned non-JSON response: ${response.status}`;
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
+      }
+
+      // Check if response has JSON content
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const result = await response.json();
+        console.log('Update result:', result);
       }
 
       toast({
         title: "Success",
         description: "Event updated successfully!"
       })
+      
       setIsEditing(false)
-      fetchEvent(); // Re-fetch to update UI with latest data
+      setNewFiles([])
+      setImagesToDelete([])
+      
+      // Re-fetch to update UI with latest data
+      await fetchEvent();
+      
     } catch (err: any) {
       console.error('Error updating event:', err)
-      setError(err.message || "There was an error updating the event.");
+      const errorMessage = err.message || "Failed to update event.";
+      setError(errorMessage);
+      
       toast({
         variant: "destructive",
         title: "Error",
-        description: err.message || "Failed to update event."
+        description: errorMessage
       })
     } finally {
       setIsSubmitting(false)
@@ -135,28 +212,52 @@ export default function EventDetailsPage() {
     setError(null);
 
     try {
+      console.log(`Deleting event with ID: ${event.id}`);
+      
       const response = await fetch(`/api/events/${event.id}`, {
         method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        }
       })
 
-      const result = await response.json()
+      console.log(`Delete response status: ${response.status}`);
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to delete event.')
+        let errorMessage = `HTTP Error: ${response.status}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorResult = await response.json();
+            errorMessage = errorResult.message || errorMessage;
+          } else {
+            const errorText = await response.text();
+            console.error('Non-JSON error response:', errorText);
+            errorMessage = `Server returned non-JSON response: ${response.status}`;
+          }
+        } catch (parseError) {
+          console.error('Error parsing error response:', parseError);
+        }
+        throw new Error(errorMessage);
       }
 
       toast({
         title: "Success",
         description: "Event deleted successfully!"
       })
-      router.push('/admin/events') // Redirect to the admin list after deletion
+      
+      router.push('/admin/events')
+      
     } catch (err: any) {
       console.error('Error deleting event:', err)
-      setError(err.message || "There was an error deleting the event.");
+      const errorMessage = err.message || "Failed to delete event.";
+      setError(errorMessage);
+      
       toast({
         variant: "destructive",
         title: "Error",
-        description: err.message || "Failed to delete event."
+        description: errorMessage
       })
     } finally {
       setIsDeleting(false)
@@ -192,7 +293,12 @@ export default function EventDetailsPage() {
         <div className="ml-auto flex gap-2">
           {isEditing ? (
             <>
-              <Button variant="outline" onClick={() => setIsEditing(false)} disabled={isSubmitting}>
+              <Button variant="outline" onClick={() => {
+                setIsEditing(false)
+                setNewFiles([])
+                setImagesToDelete([])
+                setEditFormData(event) // Reset form data
+              }} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button type="submit" form="edit-event-form" disabled={isSubmitting}>
@@ -261,8 +367,7 @@ export default function EventDetailsPage() {
                   label="Event Images"
                   existingImages={event.images}
                   onFilesChange={handleFilesChange}
-                  disabled={isSubmitting}
-                />
+                  disabled={isSubmitting} imagesToDelete={[]}                />
               </form>
             ) : (
               <div className="space-y-6">
@@ -298,7 +403,7 @@ export default function EventDetailsPage() {
                     </div>
                   </div>
                 )}
-                {event.images.length === 0 && (
+                {(!event.images || event.images.length === 0) && (
                   <div className="text-gray-500 text-sm mt-2">No images available for this event.</div>
                 )}
               </div>

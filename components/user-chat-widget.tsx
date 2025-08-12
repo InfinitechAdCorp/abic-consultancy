@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,48 +38,133 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSessionStarted, setIsSessionStarted] = useState(false);
   const [isAITyping, setIsAITyping] = useState(false);
+  const [lastMessageId, setLastMessageId] = useState<number | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [isFirstMessage, setIsFirstMessage] = useState(true);
+  
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const scrollToBottom = useCallback(() => {
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  }, []);
 
+  // Fetch messages function
+  const fetchMessages = useCallback(async () => {
+    if (!sessionId) return;
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/chatbot/chat-sessions/${sessionId}/messages`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch messages');
+      }
+      const data: Message[] = await response.json();
+      
+      // Sort messages by created_at AND id to ensure proper chronological order
+      // First by created_at, then by id as fallback for messages with same timestamp
+      const sortedMessages = data.sort((a, b) => {
+        const dateA = new Date(a.created_at).getTime();
+        const dateB = new Date(b.created_at).getTime();
+        
+        // If timestamps are the same, sort by ID
+        if (dateA === dateB) {
+          return a.id - b.id;
+        }
+        
+        // Sort by timestamp (oldest first)
+        return dateA - dateB;
+      });
+      
+      // Use functional update to avoid dependency on messages
+      setMessages((prevMessages) => {
+        // Check if we have new messages by comparing the entire array length and last message
+        const hasNewMessages = sortedMessages.length !== prevMessages.length || 
+          (sortedMessages.length > 0 && prevMessages.length > 0 && 
+           sortedMessages[sortedMessages.length - 1].id !== prevMessages[prevMessages.length - 1].id);
+        
+        if (hasNewMessages) {
+          // Update last message ID
+          if (sortedMessages.length > 0) {
+            setLastMessageId(sortedMessages[sortedMessages.length - 1].id);
+          }
+          
+          // Clear pending message when new message arrives
+          setPendingMessage(null);
+          
+          // Clear typing indicator and loading state when any new message arrives
+          // (whether from AI, admin, or user)
+          setIsAITyping(false);
+          setIsLoading(false);
+          
+          // After first response, subsequent messages go to admin
+          setIsFirstMessage(false);
+          
+          // Scroll to bottom when new messages arrive
+          scrollToBottom();
+          
+          return sortedMessages;
+        }
+        
+        return prevMessages;
+      });
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      // Only show error toast if this is not a background polling request
+      if (isAITyping || isLoading) {
+        toast({
+          title: 'Error',
+          description: 'Failed to load chat messages.',
+          variant: 'destructive',
+        });
+      }
+      setIsAITyping(false);
+      setIsLoading(false);
+    }
+  }, [sessionId, lastMessageId, isAITyping, isLoading, toast, scrollToBottom]);
+
+  // Setup polling when session starts
   useEffect(() => {
-    if (sessionId) {
-      const fetchMessages = async () => {
-        try {
-          const response = await fetch(`${API_BASE_URL}/chatbot/chat-sessions/${sessionId}/messages`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch messages');
-          }
-          const data: Message[] = await response.json();
-          setMessages(data);
-          // If we were waiting for an AI response and it arrived, turn off typing indicator
-          if (isAITyping && data.length > 0 && data[data.length - 1].sender_type === 'ai') {
-            setIsAITyping(false);
-            setIsLoading(false); // Also turn off general loading state
-          }
-        } catch (error) {
-          console.error('Error fetching messages:', error);
-          toast({
-            title: 'Error',
-            description: 'Failed to load chat messages.',
-            variant: 'destructive',
-          });
-          setIsAITyping(false); // Turn off typing indicator on error
-          setIsLoading(false); // Turn off general loading state on error
+    if (sessionId && isSessionStarted) {
+      // Initial fetch
+      fetchMessages();
+      
+      // Setup polling
+      const interval = setInterval(fetchMessages, POLLING_INTERVAL);
+      setPollingInterval(interval);
+      
+      return () => {
+        if (interval) {
+          clearInterval(interval);
         }
       };
-      fetchMessages(); // Initial fetch
-      const interval = setInterval(fetchMessages, POLLING_INTERVAL);
-      return () => clearInterval(interval); // Cleanup on unmount
     }
-  }, [sessionId, toast, isAITyping]); // Added isAITyping to dependencies to react to its state changes
+    
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+        setPollingInterval(null);
+      }
+    };
+  }, [sessionId, isSessionStarted, fetchMessages]);
 
+  // Scroll to bottom when typing indicator appears
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, isAITyping]); // Scroll when messages or typing indicator changes
+    if (isAITyping) {
+      scrollToBottom();
+    }
+  }, [isAITyping, scrollToBottom]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, [pollingInterval]);
 
   const handleStartSession = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,7 +176,9 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
       });
       return;
     }
+    
     setIsLoading(true);
+    
     try {
       const response = await fetch(`${API_BASE_URL}/chatbot/start-session`, {
         method: 'POST',
@@ -100,13 +187,16 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
         },
         body: JSON.stringify({ user_name: userName, user_concern: userConcern }),
       });
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to start chat session');
       }
+      
       const session: ChatSession = await response.json();
       setSessionId(session.id);
       setIsSessionStarted(true);
+      
       toast({
         title: 'Session Started',
         description: 'Your chat session has begun!',
@@ -125,20 +215,17 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inputMessage.trim() || !sessionId) return;
+    if (!inputMessage.trim() || !sessionId || isLoading) return;
 
-    const newMessage: Message = {
-      id: Date.now(), // Temporary ID for optimistic update
-      chat_session_id: sessionId,
-      sender_type: 'user',
-      content: inputMessage,
-      created_at: new Date().toISOString(),
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
+    const messageContent = inputMessage.trim();
     setInputMessage('');
-    setIsLoading(true); // Set general loading state
-    setIsAITyping(true); // Set AI typing indicator
+    setIsLoading(true);
+    setPendingMessage(messageContent);
+    
+    // Only set AI typing for the first message
+    if (isFirstMessage) {
+      setIsAITyping(true);
+    }
 
     try {
       const response = await fetch(`${API_BASE_URL}/chatbot/chat-sessions/${sessionId}/messages`, {
@@ -146,14 +233,27 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sender_type: 'user', content: newMessage.content }),
+        body: JSON.stringify({ 
+          sender_type: 'user', 
+          content: messageContent 
+        }),
       });
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to send message');
       }
-      // The polling mechanism will eventually fetch the actual message from the server
-      // No need to set isLoading/isAITyping to false here, as polling will handle it.
+
+      // Force immediate fetch of messages after sending
+      setTimeout(fetchMessages, 500);
+      
+      // If this is not the first message, just clear loading after a short delay
+      if (!isFirstMessage) {
+        setTimeout(() => {
+          setIsLoading(false);
+        }, 1000);
+      }
+      
     } catch (error: any) {
       console.error('Error sending message:', error);
       toast({
@@ -161,10 +261,19 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
         description: error.message || 'Failed to send message.',
         variant: 'destructive',
       });
-      // Revert optimistic update if sending fails
-      setMessages((prev) => prev.filter((msg) => msg.id !== newMessage.id));
-      setIsAITyping(false); // Turn off typing indicator on error
-      setIsLoading(false); // Turn off general loading state on error
+      
+      // Restore the input message on error
+      setInputMessage(messageContent);
+      setPendingMessage(null);
+      setIsAITyping(false);
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e as any);
     }
   };
 
@@ -172,7 +281,13 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
     <Card className="w-full h-[80vh] flex flex-col rounded-xl shadow-lg border border-gray-200 bg-white">
       <CardHeader className="flex flex-row items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <CardTitle className="text-lg font-semibold text-gray-800">Chat Support</CardTitle>
-        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close chat" className="text-gray-500 hover:text-gray-700">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onClose} 
+          aria-label="Close chat" 
+          className="text-gray-500 hover:text-gray-700"
+        >
           <X className="h-5 w-5" />
         </Button>
       </CardHeader>
@@ -202,7 +317,11 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
                 disabled={isLoading}
                 className="p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800"
               />
-              <Button type="submit" className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3 text-base rounded-lg shadow-md transition-colors duration-200" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full bg-blue-600 text-white hover:bg-blue-700 py-3 text-base rounded-lg shadow-md transition-colors duration-200" 
+                disabled={isLoading}
+              >
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
                 Start Chat
               </Button>
@@ -212,33 +331,47 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
           <div className="flex-grow flex flex-col bg-gray-50">
             <ScrollArea className="flex-grow p-4">
               <div className="flex flex-col space-y-4">
-                {messages.map((m) => (
+                {messages.map((message) => (
                   <div
-                    key={m.id}
-                    className={`flex items-start gap-3 ${m.sender_type === 'user' ? 'justify-end' : 'justify-start'}`}
+                    key={message.id}
+                    className={`flex items-start gap-3 ${
+                      message.sender_type === 'user' ? 'justify-end' : 'justify-start'
+                    }`}
                   >
-                    {m.sender_type !== 'user' && (
+                    {message.sender_type !== 'user' && (
                       <Avatar className="h-8 w-8 border border-gray-200">
                         <AvatarFallback className="bg-gray-200 text-gray-600 text-sm">
-                          {m.sender_type === 'ai' ? 'AI' : 'AD'}
+                          {message.sender_type === 'ai' ? 'AI' : 'AD'}
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div className={`flex flex-col max-w-[75%] ${m.sender_type === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`flex flex-col max-w-[75%] ${
+                      message.sender_type === 'user' ? 'items-end' : 'items-start'
+                    }`}>
                       <div
                         className={`inline-block p-3 rounded-lg shadow-sm ${
-                          m.sender_type === 'user'
+                          message.sender_type === 'user'
                             ? 'bg-blue-600 text-white rounded-br-none'
                             : 'bg-white text-gray-800 rounded-bl-none border border-gray-200'
                         }`}
                       >
-                        <p className="text-sm">{m.content}</p>
-                        <div className={`text-xs mt-1 ${m.sender_type === 'user' ? 'text-blue-100' : 'text-gray-500'} text-right`}>
-                          {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                        <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
+                          message.sender_type === 'user' ? 'text-blue-100' : 'text-gray-500'
+                        }`}>
+                          <span>
+                            {new Date(message.created_at).toLocaleTimeString([], { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </span>
+                          {message.sender_type === 'user' && (
+                            <span className="text-blue-200">✓</span>
+                          )}
                         </div>
                       </div>
                     </div>
-                    {m.sender_type === 'user' && (
+                    {message.sender_type === 'user' && (
                       <Avatar className="h-8 w-8 border border-gray-200">
                         <AvatarFallback className="bg-blue-100 text-blue-600 text-sm">
                           {userName.charAt(0).toUpperCase()}
@@ -247,6 +380,28 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
                     )}
                   </div>
                 ))}
+                
+                {/* Pending Message - Shows while message is being sent */}
+                {pendingMessage && (
+                  <div className="flex items-start gap-3 justify-end">
+                    <div className="flex flex-col max-w-[75%] items-end">
+                      <div className="inline-block p-3 rounded-lg shadow-sm bg-blue-400 text-white rounded-br-none opacity-70">
+                        <p className="text-sm whitespace-pre-wrap">{pendingMessage}</p>
+                        <div className="text-xs mt-1 flex items-center justify-end gap-1 text-blue-100">
+                          <span>Sending...</span>
+                          <div className="w-2 h-2 border border-blue-200 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <Avatar className="h-8 w-8 border border-gray-200">
+                      <AvatarFallback className="bg-blue-100 text-blue-600 text-sm">
+                        {userName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                )}
+                
+                {/* AI/Admin Typing Indicator */}
                 {isAITyping && (
                   <div className="flex items-start gap-3 justify-start">
                     <Avatar className="h-8 w-8 border border-gray-200">
@@ -254,12 +409,27 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
                     </Avatar>
                     <div className="inline-block p-3 rounded-lg shadow-sm bg-white text-gray-800 rounded-bl-none border border-gray-200">
                       <div className="flex items-center space-x-1">
-                        <span className="text-sm">AI is typing</span>
-                        <span className="animate-pulse text-sm">...</span>
+                        <span className="text-sm">AI is processing your request</span>
+                        <div className="flex space-x-1">
+                          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
+                
+                {/* Waiting for Admin Message */}
+                {!isFirstMessage && !isLoading && !isAITyping && (
+                  <div className="flex justify-center">
+                    <div className="inline-block px-3 py-2 rounded-full bg-gray-100 text-gray-600 text-xs">
+                      Please wait for admin response...
+                    </div>
+                  </div>
+                )}
+                
+                {/* Scroll anchor */}
                 <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
@@ -273,12 +443,22 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
             <Input
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
               placeholder="Type your message..."
               className="flex-grow p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-gray-800"
               disabled={isLoading}
+              autoFocus
             />
-            <Button type="submit" disabled={!inputMessage.trim() || isLoading} className="bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-colors duration-200">
-              {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
+            <Button 
+              type="submit" 
+              disabled={!inputMessage.trim() || isLoading} 
+              className="bg-blue-600 text-white hover:bg-blue-700 shadow-md transition-colors duration-200 px-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Send className="h-5 w-5" />
+              )}
               <span className="sr-only">Send message</span>
             </Button>
           </form>
@@ -287,4 +467,3 @@ export function UserChatWidget({ onClose }: { onClose: () => void }) {
     </Card>
   );
 }
-

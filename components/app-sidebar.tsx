@@ -1,5 +1,30 @@
 "use client"
-import { Home, Building2, FileText, Award, RotateCcw, XCircle, Plane, Clock, Globe, Calculator, Receipt, TrendingUp, Settings, HelpCircle, LogOut, User, Bell, ChevronRight, MessageSquare, Search, Loader2, RefreshCw } from 'lucide-react'
+
+import {
+  Home,
+  Building2,
+  FileText,
+  Award,
+  RotateCcw,
+  XCircle,
+  Plane,
+  Clock,
+  Globe,
+  Calculator,
+  Receipt,
+  TrendingUp,
+  Settings,
+  HelpCircle,
+  LogOut,
+  MessageSquare,
+  Star,
+  Calendar,
+  Megaphone,
+  ChevronDown,
+  Loader2,
+  Headset,
+
+} from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -11,19 +36,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
-  SidebarInput,
 } from "@/components/ui/sidebar"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronDown, Calendar, Star, Megaphone  } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
+import { useAuth } from "@/components/auth-provider" // Import useAuth
 
 // Business Solution items
 const businessSolutionItems = [
@@ -35,23 +54,23 @@ const businessSolutionItems = [
   },
   {
     title: "Amendment",
-    url: "/business/amendment",
+    url: "/admin/business-services/amendment",
     icon: FileText,
   },
   {
     title: "Special License & Permit",
-    url: "/business/license-permit",
+    url: "/admin/business-services/license-permit",
     icon: Award,
     badge: "3",
   },
   {
     title: "Business Renewal",
-    url: "/business/renewal",
+    url: "/admin/business-services/renewal",
     icon: RotateCcw,
   },
   {
     title: "Business Closure",
-    url: "/business/closure",
+    url: "/admin/business-services/closure",
     icon: XCircle,
   },
 ]
@@ -60,18 +79,18 @@ const businessSolutionItems = [
 const visaServiceItems = [
   {
     title: "Short Term Visa",
-    url: "/visa/short-term",
+    url: "/admin/visa-services/short-term",
     icon: Clock,
   },
   {
     title: "Long Term Visa",
-    url: "/visa/long-term",
+    url: "/admin/visa-services/long-term",
     icon: Plane,
     badge: "Popular",
   },
   {
     title: "International Visa",
-    url: "/visa/international",
+    url: "/admin/visa-services/international",
     icon: Globe,
   },
 ]
@@ -80,18 +99,18 @@ const visaServiceItems = [
 const taxAccountingItems = [
   {
     title: "Tax Requirements",
-    url: "/tax/requirements",
+    url: "/admin/tax-accounting/requirements",
     icon: Receipt,
   },
   {
     title: "Mandatory Taxes",
-    url: "/tax/mandatory",
+    url: "/admin/tax-accounting/mandatory",
     icon: Calculator,
     badge: "Due",
   },
   {
     title: "Payroll Services",
-    url: "/tax/payroll",
+    url: "/admin/tax-accounting/payroll",
     icon: TrendingUp,
   },
 ]
@@ -109,9 +128,14 @@ const systemItems = [
     icon: MessageSquare,
   },
   {
+    title: "Inquiries",
+    url: "/admin/contact-forms",
+    icon: HelpCircle,
+  },
+  {
     title: "Chat Support",
-    url: "/admin/chat", // Corrected URL to match your page.tsx
-    icon: MessageSquare,
+    url: "/admin/chat",
+    icon: Headset,
   },
   {
     title: "Testimonials",
@@ -123,16 +147,28 @@ const systemItems = [
     url: "/admin/events",
     icon: Calendar,
   },
-    {
+  {
     title: "Announcements",
     url: "/admin/announcements",
-    icon: Megaphone ,
+    icon: Megaphone,
   },
-];
+  {
+    title: "Settings",
+    url: "/admin/settings",
+    icon: Settings,
+  },
+  {
+    title: "Help",
+    url: "/admin/help",
+    icon: HelpCircle,
+  },
+]
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const { isAuthenticated, logout, isLoading } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+
   const [collapsedSections, setCollapsedSections] = useState({
     business: true,
     visa: true,
@@ -140,28 +176,16 @@ export function AppSidebar() {
   })
 
   const toggleSection = (section: string) => {
-    setCollapsedSections(prev => ({
+    setCollapsedSections((prev) => ({
       ...prev,
-      [section]: !prev[section as keyof typeof prev]
+      [section]: !prev[section as keyof typeof prev],
     }))
   }
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
     try {
-      const response = await fetch("/api/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
-      if (response.ok) {
-        localStorage.clear()
-        sessionStorage.clear()
-        window.location.href = "/login"
-      } else {
-        throw new Error("Logout failed")
-      }
+      logout() // This already handles localStorage clear and router.push("/login")
     } catch (error) {
       console.error("Logout error:", error)
       setIsLoggingOut(false)
@@ -199,6 +223,20 @@ export function AppSidebar() {
     </SidebarMenuItem>
   )
 
+  // Render loading state or null if not authenticated
+  if (isLoading) {
+    return (
+      <Sidebar className="flex items-center justify-center bg-gradient-to-b from-blue-50/50 to-green-50/50 backdrop-blur-sm border-r shadow-lg">
+        <Loader2 className="h-8 w-8 animate-spin text-emerald-500" />
+        <span className="sr-only">Loading sidebar...</span>
+      </Sidebar>
+    )
+  }
+
+  if (!isAuthenticated) {
+    return null // Do not render sidebar content if not authenticated
+  }
+
   return (
     <Sidebar className="bg-gradient-to-b from-blue-50/50 to-green-50/50 backdrop-blur-sm border-r shadow-lg">
       <SidebarHeader className="border-b border-gray-100 p-4 bg-gradient-to-r from-blue-50 to-green-50">
@@ -221,67 +259,62 @@ export function AppSidebar() {
               Navigation
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu className="space-y-1">
-                {systemItems.map(renderMenuItem)}
-              </SidebarMenu>
+              <SidebarMenu className="space-y-1">{systemItems.map(renderMenuItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-
           {/* Business Solutions Section */}
-          <Collapsible open={!collapsedSections.business} onOpenChange={() => toggleSection('business')}>
+          <Collapsible open={!collapsedSections.business} onOpenChange={() => toggleSection("business")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
                   <div className="h-2 w-2 rounded-full bg-green-500"></div>
                   Business Solutions
-                  <ChevronDown className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.business ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.business ? "rotate-180" : ""}`}
+                  />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  <SidebarMenu className="space-y-1">
-                    {businessSolutionItems.map(renderMenuItem)}
-                  </SidebarMenu>
+                  <SidebarMenu className="space-y-1">{businessSolutionItems.map(renderMenuItem)}</SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
           </Collapsible>
-
           {/* Visa Services Section */}
-          <Collapsible open={!collapsedSections.visa} onOpenChange={() => toggleSection('visa')}>
+          <Collapsible open={!collapsedSections.visa} onOpenChange={() => toggleSection("visa")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
                   <div className="h-2 w-2 rounded-full bg-purple-500"></div>
                   Visa Services
-                  <ChevronDown className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.visa ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.visa ? "rotate-180" : ""}`}
+                  />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  <SidebarMenu className="space-y-1">
-                    {visaServiceItems.map(renderMenuItem)}
-                  </SidebarMenu>
+                  <SidebarMenu className="space-y-1">{visaServiceItems.map(renderMenuItem)}</SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
           </Collapsible>
-
           {/* Tax & Accounting Section */}
-          <Collapsible open={!collapsedSections.tax} onOpenChange={() => toggleSection('tax')}>
+          <Collapsible open={!collapsedSections.tax} onOpenChange={() => toggleSection("tax")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
                   <div className="h-2 w-2 rounded-full bg-orange-500"></div>
                   Tax & Accounting
-                  <ChevronDown className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.tax ? 'rotate-180' : ''}`} />
+                  <ChevronDown
+                    className={`h-3 w-3 ml-auto transition-transform duration-200 ${!collapsedSections.tax ? "rotate-180" : ""}`}
+                  />
                 </SidebarGroupLabel>
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarGroupContent>
-                  <SidebarMenu className="space-y-1">
-                    {taxAccountingItems.map(renderMenuItem)}
-                  </SidebarMenu>
+                  <SidebarMenu className="space-y-1">{taxAccountingItems.map(renderMenuItem)}</SidebarMenu>
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
@@ -299,9 +332,7 @@ export function AppSidebar() {
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 group-hover:bg-red-100 transition-colors">
                 <LogOut className="h-3.5 w-3.5" />
               </div>
-              <span className="text-sm font-medium ml-3">
-                {isLoggingOut ? "Logging out..." : "Logout"}
-              </span>
+              <span className="text-sm font-medium ml-3">{isLoggingOut ? "Logging out..." : "Logout"}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -197,10 +197,7 @@ export default function CountryPage({ params }: CountryPageProps) {
             <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
               Our visa specialists will guide you through the entire application process for {country.name.replace(' Visa', '')}.
             </p>
-            <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-              Get Visa Assistance
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            
           </div>
         </div>
       </section>
