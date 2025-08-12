@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Loader2,
   Headset,
+  BookOpen,
 
 } from "lucide-react"
 import {
@@ -121,6 +122,11 @@ const systemItems = [
     title: "Dashboard",
     url: "/admin",
     icon: Home,
+  },
+  {
+    title: "Blog",
+    url: "/admin/blog",
+    icon: BookOpen,
   },
   {
     title: "Consultations",

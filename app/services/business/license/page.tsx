@@ -149,10 +149,7 @@ export default function LicensePage() {
               <p className="text-xl text-muted-foreground mb-8">
                 Professional assistance in obtaining specialized licenses and permits for your business operations
               </p>
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-                Get License Assistance
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              
             </div>
           </div>
         </div>
@@ -163,14 +160,7 @@ export default function LicensePage() {
         <div className="absolute inset-0 opacity-5 bg-[url('/subtle-pattern.png')] bg-repeat animate-pulse-subtle"></div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-              <h2 className="text-3xl font-bold mb-4">
-                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Special License & Permit</span> Services
-              </h2>
-              <p className="text-xl text-muted-foreground">
-                We help you obtain the necessary licenses and permits for your specific industry
-              </p>
-            </div>
+            
             <div className="grid lg:grid-cols-2 gap-8">
               {licenses.map((license, index) => {
                 const Icon = license.icon
@@ -240,12 +230,7 @@ export default function LicensePage() {
                 )
               })}
             </div>
-            <div className="text-center mt-12">
-              <div className="inline-flex items-center space-x-2 bg-gradient-to-r from-green-50 to-blue-50 px-6 py-3 rounded-full border border-green-200">
-                <Award className="h-5 w-5 text-green-600 animate-bounce-subtle" />
-                <p className="text-lg text-muted-foreground font-medium">And many more specialized licenses...</p>
-              </div>
-            </div>
+           
           </div>
         </div>
       </section>
@@ -319,22 +304,7 @@ export default function LicensePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-green-50 via-blue-50 to-white relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle" style={{animationDelay: '1s'}}></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center text-gray-800">
-            <h2 className="text-3xl font-bold mb-4">Need Help with Licenses & Permits?</h2>
-            <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-              Our experts will guide you through the entire process of obtaining the necessary licenses and permits for your business
-            </p>
-            <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-              Get License Assistance
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
+     
 
       <Footer />
       

@@ -152,7 +152,7 @@ export default function MandatoryTaxesPage() {
             className="text-center mt-12"
           >
             <Button asChild size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-              <Link href="/contact">SCHEDULE A CONSULTATION</Link>
+              <Link href="/consultation">SCHEDULE A CONSULTATION</Link>
             </Button>
           </motion.div>
         </div>

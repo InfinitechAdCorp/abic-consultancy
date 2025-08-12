@@ -6,7 +6,7 @@ import { CheckCircle, ArrowRight, Users, Building, FileText, Globe, Briefcase, S
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from 'react'
-
+import Link from "next/link"
 export default function StartupPage() {
   const [isVisibleSteps, setIsVisibleSteps] = useState(false)
   const [animatedStepCards, setAnimatedStepCards] = useState<number[]>([])
@@ -170,14 +170,16 @@ export default function StartupPage() {
                             {/* CTA Card */}
               <Card className="border-0 shadow-lg bg-gradient-to-r from-green-500 to-blue-500 text-white flex flex-col justify-center items-center text-center p-6">
                 <CardContent className="p-0 flex flex-col justify-center items-center text-center h-full">
-                  <Target className="h-12 w-12 mb-4 animate-bounce-subtle" />
-                  <h3 className="text-lg font-bold mb-2">Ready to Start?</h3>
-                  <p className="text-sm mb-4 opacity-90">Schedule your consultation today</p>
-                  <Button size="sm" className="bg-white text-green-600 hover:bg-gray-100">
-                    Get Started
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </CardContent>
+  <Target className="h-12 w-12 mb-4 animate-bounce-subtle" />
+  <h3 className="text-lg font-bold mb-2">Ready to Start?</h3>
+  <p className="text-sm mb-4 opacity-90">Schedule your consultation today</p>
+  <Link href="/consultation">
+    <Button size="sm" className="bg-white text-green-600 hover:bg-gray-100">
+      Get Started
+      <ArrowRight className="ml-2 h-4 w-4" />
+    </Button>
+  </Link>
+</CardContent>
               </Card>
             </div>
           </div>
@@ -297,23 +299,7 @@ export default function StartupPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-br from-green-50 via-blue-50 to-white relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle" style={{animationDelay: '1s'}}></div>
-        <div className="container mx-auto px-6 lg:px-8 relative z-10">
-          <div className="text-center text-gray-800">
-            <h2 className="text-3xl font-bold mb-4">
-              Ready to Launch Your Business in the Philippines?
-            </h2>
-            <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-              Let our experts guide you through the entire business setup process
-            </p>
-            <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-              Start Your Business Today
-            </Button>
-          </div>
-        </div>
-      </section>
+     
 
       <Footer />
       

@@ -126,10 +126,7 @@ export default function AmendmentPage() {
               <p className="text-xl text-muted-foreground mb-8">
                 Professional business amendment services to adapt your business structure as it grows
               </p>
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-                Get Amendment Services
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+             
             </div>
           </div>
         </div>
@@ -278,23 +275,7 @@ export default function AmendmentPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-br from-green-50 via-blue-50 to-white relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle" style={{animationDelay: '1s'}}></div>
-        
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="text-center text-gray-800">
-            <h2 className="text-3xl font-bold mb-4">Need to Amend Your Business Structure?</h2>
-            <p className="text-xl opacity-90 mb-8 max-w-2xl mx-auto">
-              Contact our experts for professional amendment services tailored to your business needs
-            </p>
-            <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-              Get Amendment Services
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      </section>
+     
 
       <Footer />
       

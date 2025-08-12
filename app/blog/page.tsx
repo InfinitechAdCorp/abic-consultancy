@@ -17,7 +17,7 @@ interface BlogPost {
   content: string
   thumbnail: string | null
   video_path: string | null
-  created_at: string
+  published_at: string
   reading_time: number
   featured: boolean
 }
@@ -81,7 +81,7 @@ export default function BlogPage() {
   const getMediaUrl = (path: string | null) => {
     if (!path) return null
     const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8000"
-    return `${baseUrl}${path}`
+    return `${baseUrl}${path}?v=${Date.now()}`
   }
 
   if (loading) {
@@ -203,7 +203,7 @@ export default function BlogPage() {
                           <div className="flex items-center gap-6 text-sm text-gray-500 mb-6">
                             <div className="flex items-center gap-2">
                               <CalendarDays className="w-4 h-4" />
-                              <span>{formatDate(featuredPost.created_at)}</span>
+                              <span>{formatDate(featuredPost.published_at)}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4" />
@@ -254,7 +254,7 @@ export default function BlogPage() {
                       </div>
                       <CardHeader>
                         <div className="flex items-center justify-between mb-2">
-                          <span className="text-xs text-gray-500">{formatDate(blog.created_at)}</span>
+                          <span className="text-xs text-gray-500">{formatDate(blog.published_at)}</span>
                         </div>
                         <CardTitle className="text-lg hover:text-teal-600 transition-colors">
                           <Link href={`/blog/${blog.slug}`}>{blog.title}</Link>

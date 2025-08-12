@@ -90,6 +90,18 @@ export default function BlogAdminPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isCreating, setIsCreating] = useState(false)
 
+  // Add state variables for the edit blog modal:
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingBlog, setEditingBlog] = useState<Blog | null>(null)
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    content: "",
+    status: "draft" as "draft" | "published",
+  })
+  const [editThumbnailFile, setEditThumbnailFile] = useState<File | null>(null)
+  const [editVideoFile, setEditVideoFile] = useState<File | null>(null)
+  const [isUpdating, setIsUpdating] = useState(false)
+
   // Add handler functions for the new blog form:
   const handleNewFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -153,6 +165,94 @@ export default function BlogAdminPage() {
       })
     } finally {
       setIsCreating(false)
+    }
+  }
+
+  // Add handler functions for the edit blog form:
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleEditThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setEditThumbnailFile(file)
+  }
+
+  const handleEditVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setEditVideoFile(file)
+  }
+
+  const openEditModal = (blog: Blog) => {
+    setEditingBlog(blog)
+    setEditFormData({
+      title: blog.title,
+      content: blog.content,
+      status: blog.status,
+    })
+    setEditThumbnailFile(null)
+    setEditVideoFile(null)
+    setIsEditModalOpen(true)
+  }
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingBlog) return
+
+    setIsUpdating(true)
+    try {
+      const formData = new FormData()
+      formData.append("title", editFormData.title)
+      formData.append("content", editFormData.content)
+      formData.append("status", editFormData.status)
+
+      if (editThumbnailFile) {
+        formData.append("thumbnail", editThumbnailFile)
+      }
+      if (editVideoFile) {
+        formData.append("video", editVideoFile)
+      }
+
+      console.log("Sending update for blog ID:", editingBlog.id)
+      console.log("Form data:", {
+        title: editFormData.title,
+        content: editFormData.content,
+        status: editFormData.status,
+      })
+
+      const response = await fetch(`/api/blogs/${editingBlog.id}`, {
+        method: "PUT",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to update blog post")
+      }
+
+      const result = await response.json()
+      console.log("Update result:", result) // Added logging for debugging
+
+      toast({
+        title: "Success",
+        description: "Blog post updated successfully!",
+      })
+
+      setIsEditModalOpen(false)
+      setEditingBlog(null)
+      setTimeout(() => {
+        fetchBlogs()
+      }, 100)
+    } catch (error) {
+      console.error("Error updating blog post:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update blog post. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUpdating(false)
     }
   }
 
@@ -306,7 +406,7 @@ export default function BlogAdminPage() {
                         <div>
                           <Label className="text-sm font-medium text-gray-500">Thumbnail</Label>
                           <img
-                            src={selectedBlog.thumbnail_path || "/placeholder.svg"}
+                            src={getMediaUrl(selectedBlog.thumbnail_path) || "/placeholder.svg"}
                             alt="Blog thumbnail"
                             className="mt-2 max-w-xs rounded-md"
                           />
@@ -316,7 +416,7 @@ export default function BlogAdminPage() {
                         <div>
                           <Label className="text-sm font-medium text-gray-500">Video</Label>
                           <video
-                            src={`${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${selectedBlog.video_path}`}
+                            src={getMediaUrl(selectedBlog.video_path) || undefined}
                             controls
                             className="mt-2 max-w-xs rounded-md"
                             preload="metadata"
@@ -343,7 +443,7 @@ export default function BlogAdminPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => router.push(`/admin/blog/${blog.id}`)}>
+                <DropdownMenuItem onClick={() => openEditModal(blog)}>
                   <Edit className="mr-2 h-4 w-4" /> Edit Blog Post
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -370,6 +470,12 @@ export default function BlogAdminPage() {
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
   })
+
+  const getMediaUrl = (path: string | null): string | undefined => {
+    if (!path) return undefined
+    const baseUrl = `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}${path}`
+    return `${baseUrl}?v=${Date.now()}`
+  }
 
   if (loading) {
     return (
@@ -452,7 +558,7 @@ export default function BlogAdminPage() {
                             <Label htmlFor="newStatus">Status</Label>
                             <Select
                               value={newFormData.status}
-                              onValueChange={(value) =>
+                              onValueChange={(value: string) =>
                                 setNewFormData((prev) => ({ ...prev, status: value as "draft" | "published" }))
                               }
                             >
@@ -511,6 +617,118 @@ export default function BlogAdminPage() {
                                 </>
                               ) : (
                                 "Create Blog Post"
+                              )}
+                            </Button>
+                          </DialogFooter>
+                        </form>
+                      </DialogContent>
+                    </Dialog>
+                    {/* Edit Blog Post modal */}
+                    <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+                      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                          <DialogTitle>Edit Blog Post</DialogTitle>
+                          <DialogDescription>Update the details for your blog post.</DialogDescription>
+                        </DialogHeader>
+                        <form onSubmit={handleEditSubmit} className="space-y-6 py-4">
+                          <div>
+                            <Label htmlFor="editTitle">Blog Title</Label>
+                            <Input
+                              id="editTitle"
+                              name="title"
+                              value={editFormData.title}
+                              onChange={handleEditFormChange}
+                              required
+                              disabled={isUpdating}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editContent">Content</Label>
+                            <Textarea
+                              id="editContent"
+                              name="content"
+                              value={editFormData.content}
+                              onChange={handleEditFormChange}
+                              required
+                              rows={5}
+                              disabled={isUpdating}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="editStatus">Status</Label>
+                            <Select
+                              value={editFormData.status}
+                              onValueChange={(value: string) =>
+                                setEditFormData((prev) => ({ ...prev, status: value as "draft" | "published" }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="draft">Draft</SelectItem>
+                                <SelectItem value="published">Published</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="editThumbnail">Thumbnail</Label>
+                              <Input
+                                id="editThumbnail"
+                                name="thumbnail"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleEditThumbnailChange}
+                                disabled={isUpdating}
+                                className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-gray-100"
+                              />
+                              <ImageIcon className="h-4 w-4 text-gray-400" />
+                              {editThumbnailFile && (
+                                <p className="text-xs text-gray-500 mt-1">{editThumbnailFile.name}</p>
+                              )}
+                              {editingBlog?.thumbnail_path && !editThumbnailFile && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Current: {editingBlog.thumbnail_path.split("/").pop()}
+                                </p>
+                              )}
+                            </div>
+                            <div>
+                              <Label htmlFor="editVideo">Video</Label>
+                              <Input
+                                id="editVideo"
+                                name="video"
+                                type="file"
+                                accept="video/*"
+                                onChange={handleEditVideoChange}
+                                disabled={isUpdating}
+                                className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-gray-100"
+                              />
+                              <Video className="h-4 w-4 text-gray-400" />
+                              {editVideoFile && <p className="text-xs text-gray-500 mt-1">{editVideoFile.name}</p>}
+                              {editingBlog?.video_path && !editVideoFile && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Current: {editingBlog.video_path.split("/").pop()}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsEditModalOpen(false)}
+                              disabled={isUpdating}
+                            >
+                              Cancel
+                            </Button>
+                            <Button type="submit" disabled={isUpdating}>
+                              {isUpdating ? (
+                                <>
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating Blog Post...
+                                </>
+                              ) : (
+                                "Update Blog Post"
                               )}
                             </Button>
                           </DialogFooter>
