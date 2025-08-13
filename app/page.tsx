@@ -14,7 +14,7 @@ export default function HomePage() {
       <Navigation />
       <HeroSection />
       <TestimonialsSection />
-      <ServicesOverview />
+      {/* <ServicesOverview /> */}
       <WhyChooseUs />
       <CTASection />
       <FaqSection />

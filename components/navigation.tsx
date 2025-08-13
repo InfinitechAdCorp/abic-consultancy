@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { ChevronDown, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -22,6 +23,7 @@ import { ClientOnly } from "@/components/client-only"
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false)
+  const pathname = usePathname()
 
   const servicesItems = [
     {
@@ -56,6 +58,36 @@ export default function Navigation() {
     { name: "Announcements", href: "/announcements" },
   ]
 
+  const isActiveRoute = (href: string) => {
+    if (href === "/") {
+      return pathname === "/"
+    }
+    return pathname.startsWith(href)
+  }
+
+  const getNavLinkClasses = (href: string) => {
+    const baseClasses =
+      "group inline-flex h-10 w-max items-center justify-center rounded-lg px-4 py-2 text-sm font-medium transition-all focus:outline-none border backdrop-blur-sm"
+    const isActive = isActiveRoute(href)
+
+    if (isActive) {
+      return `${baseClasses} bg-emerald-100/80 text-emerald-700 border-emerald-300 shadow-md shadow-emerald-500/20`
+    }
+
+    return `${baseClasses} bg-white/60 text-gray-700 border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:shadow-md hover:shadow-emerald-500/20 focus:bg-white/80 focus:text-emerald-600 hover:border-emerald-300`
+  }
+
+  const getMobileNavLinkClasses = (href: string) => {
+    const baseClasses = "flex items-center py-2 px-3 text-sm font-medium transition-colors rounded-lg backdrop-blur-sm"
+    const isActive = isActiveRoute(href)
+
+    if (isActive) {
+      return `${baseClasses} text-emerald-700 bg-emerald-100/60`
+    }
+
+    return `${baseClasses} text-gray-700 hover:text-emerald-600 hover:bg-white/60`
+  }
+
   return (
     <header className="sticky top-0 z-50 w-full border-b border-emerald-200/30 bg-gradient-to-r from-emerald-50 via-teal-50 to-cyan-50 backdrop-blur-xl shadow-lg shadow-emerald-500/5">
       {/* Decorative elements */}
@@ -84,27 +116,27 @@ export default function Navigation() {
               <NavigationMenuList className="space-x-1">
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link
-                      href="/"
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-lg bg-white/60 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-emerald-600 hover:shadow-md hover:shadow-emerald-500/20 focus:bg-white/80 focus:text-emerald-600 focus:outline-none border border-white/40 hover:border-emerald-300 backdrop-blur-sm"
-                    >
+                    <Link href="/" className={getNavLinkClasses("/")}>
                       Home
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link
-                      href="/about"
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-lg bg-white/60 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-emerald-600 hover:shadow-md hover:shadow-emerald-500/20 focus:bg-white/80 focus:text-emerald-600 focus:outline-none border border-white/40 hover:border-emerald-300 backdrop-blur-sm"
-                    >
+                    <Link href="/about" className={getNavLinkClasses("/about")}>
                       About Us
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 {/* News & Updates Dropdown for Desktop */}
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="h-10 px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 border border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20 transition-all backdrop-blur-sm">
+                  <NavigationMenuTrigger
+                    className={`h-10 px-4 py-2 text-sm font-medium transition-all backdrop-blur-sm ${
+                      isActiveRoute("/events") || isActiveRoute("/announcements")
+                        ? "text-emerald-700 bg-emerald-100/80 border-emerald-300 shadow-md shadow-emerald-500/20"
+                        : "text-gray-700 bg-white/60 border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20"
+                    }`}
+                  >
                     News & Updates
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -127,7 +159,13 @@ export default function Navigation() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="h-10 px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 border border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20 transition-all backdrop-blur-sm">
+                  <NavigationMenuTrigger
+                    className={`h-10 px-4 py-2 text-sm font-medium transition-all backdrop-blur-sm ${
+                      pathname.startsWith("/services")
+                        ? "text-emerald-700 bg-emerald-100/80 border-emerald-300 shadow-md shadow-emerald-500/20"
+                        : "text-gray-700 bg-white/60 border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20"
+                    }`}
+                  >
                     Services
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -155,7 +193,13 @@ export default function Navigation() {
                   </NavigationMenuContent>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="h-10 px-4 py-2 text-sm font-medium text-gray-700 bg-white/60 border border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20 transition-all backdrop-blur-sm">
+                  <NavigationMenuTrigger
+                    className={`h-10 px-4 py-2 text-sm font-medium transition-all backdrop-blur-sm ${
+                      pathname.startsWith("/business-solution")
+                        ? "text-emerald-700 bg-emerald-100/80 border-emerald-300 shadow-md shadow-emerald-500/20"
+                        : "text-gray-700 bg-white/60 border-white/40 hover:bg-white/80 hover:text-emerald-600 hover:border-emerald-300 hover:shadow-md hover:shadow-emerald-500/20"
+                    }`}
+                  >
                     Business Solution
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -187,20 +231,14 @@ export default function Navigation() {
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link
-                      href="/blog"
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-lg bg-white/60 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-emerald-600 hover:shadow-md hover:shadow-emerald-500/20 focus:bg-white/80 focus:text-emerald-600 focus:outline-none border border-white/40 hover:border-emerald-300 backdrop-blur-sm"
-                    >
+                    <Link href="/blog" className={getNavLinkClasses("/blog")}>
                       Blog
                     </Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
                   <NavigationMenuLink asChild>
-                    <Link
-                      href="/contact"
-                      className="group inline-flex h-10 w-max items-center justify-center rounded-lg bg-white/60 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-white/80 hover:text-emerald-600 hover:shadow-md hover:shadow-emerald-500/20 focus:bg-white/80 focus:text-emerald-600 focus:outline-none border border-white/40 hover:border-emerald-300 backdrop-blur-sm"
-                    >
+                    <Link href="/contact" className={getNavLinkClasses("/contact")}>
                       Contact Us
                     </Link>
                   </NavigationMenuLink>
@@ -211,18 +249,12 @@ export default function Navigation() {
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-            <div className="bg-white/60 rounded-lg p-2 border border-white/40 backdrop-blur-sm">
-              <LanguageSelector />
-            </div>
-            {/* PWA Install Prompt for Desktop */}
-            <div className="bg-white/60 rounded-lg p-2 border border-white/40 backdrop-blur-sm">
-              <InstallPrompt />
-            </div>
+            <LanguageSelector />
+            <InstallPrompt />
           </div>
 
           {/* Mobile Navigation and Install Button */}
           <div className="flex items-center lg:hidden space-x-2">
-            {/* PWA Install Prompt for Mobile - moved here */}
             <ClientOnly>
               <InstallPrompt />
             </ClientOnly>
@@ -258,23 +290,24 @@ export default function Navigation() {
                       </div>
                     </div>
                     <nav className="flex flex-col space-y-1">
-                      <Link
-                        href="/"
-                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                        onClick={() => setIsOpen(false)}
-                      >
+                      <Link href="/" className={getMobileNavLinkClasses("/")} onClick={() => setIsOpen(false)}>
                         Home
                       </Link>
                       <Link
                         href="/about"
-                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        className={getMobileNavLinkClasses("/about")}
                         onClick={() => setIsOpen(false)}
                       >
                         About Us
                       </Link>
-                      {/* News & Updates Collapsible for Mobile */}
                       <Collapsible className="space-y-1">
-                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                        <CollapsibleTrigger
+                          className={`flex w-full items-center justify-between py-2 px-3 text-sm font-medium transition-colors rounded-lg backdrop-blur-sm ${
+                            isActiveRoute("/events") || isActiveRoute("/announcements")
+                              ? "text-emerald-700 bg-emerald-100/60"
+                              : "text-gray-700 hover:text-emerald-600 hover:bg-white/60"
+                          }`}
+                        >
                           News & Updates
                           <ChevronDown className="h-3 w-3" />
                         </CollapsibleTrigger>
@@ -283,7 +316,11 @@ export default function Navigation() {
                             <Link
                               key={item.name}
                               href={item.href}
-                              className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                              className={`block py-1.5 px-3 text-xs transition-colors rounded-lg ${
+                                isActiveRoute(item.href)
+                                  ? "text-emerald-700 bg-emerald-100/40"
+                                  : "text-gray-600 hover:text-emerald-600 hover:bg-white/40"
+                              }`}
                               onClick={() => setIsOpen(false)}
                             >
                               {item.name}
@@ -292,7 +329,13 @@ export default function Navigation() {
                         </CollapsibleContent>
                       </Collapsible>
                       <Collapsible className="space-y-1">
-                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                        <CollapsibleTrigger
+                          className={`flex w-full items-center justify-between py-2 px-3 text-sm font-medium transition-colors rounded-lg backdrop-blur-sm ${
+                            pathname.startsWith("/services")
+                              ? "text-emerald-700 bg-emerald-100/60"
+                              : "text-gray-700 hover:text-emerald-600 hover:bg-white/60"
+                          }`}
+                        >
                           Services
                           <ChevronDown className="h-3 w-3" />
                         </CollapsibleTrigger>
@@ -308,7 +351,11 @@ export default function Navigation() {
                                   <Link
                                     key={item.name}
                                     href={item.href}
-                                    className="block py-1 px-3 text-xs text-gray-500 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                                    className={`block py-1 px-3 text-xs transition-colors rounded-lg ${
+                                      isActiveRoute(item.href)
+                                        ? "text-emerald-700 bg-emerald-100/40"
+                                        : "text-gray-500 hover:text-emerald-600 hover:bg-white/40"
+                                    }`}
                                     onClick={() => setIsOpen(false)}
                                   >
                                     {item.name}
@@ -320,47 +367,54 @@ export default function Navigation() {
                         </CollapsibleContent>
                       </Collapsible>
                       <Collapsible className="space-y-1">
-                        <CollapsibleTrigger className="flex w-full items-center justify-between py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm">
+                        <CollapsibleTrigger
+                          className={`flex w-full items-center justify-between py-2 px-3 text-sm font-medium transition-colors rounded-lg backdrop-blur-sm ${
+                            pathname.startsWith("/business-solution")
+                              ? "text-emerald-700 bg-emerald-100/60"
+                              : "text-gray-700 hover:text-emerald-600 hover:bg-white/60"
+                          }`}
+                        >
                           Business Solution
                           <ChevronDown className="h-3 w-3" />
                         </CollapsibleTrigger>
                         <CollapsibleContent className="space-y-1 pl-4">
                           <Link
                             href="/business-solution/hr-consulting"
-                            className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                            className={`block py-1.5 px-3 text-xs transition-colors rounded-lg ${
+                              isActiveRoute("/business-solution/hr-consulting")
+                                ? "text-emerald-700 bg-emerald-100/40"
+                                : "text-gray-600 hover:text-emerald-600 hover:bg-white/40"
+                            }`}
                             onClick={() => setIsOpen(false)}
                           >
                             HR Consulting
                           </Link>
                           <Link
                             href="/business-solution/hr-outsourcing"
-                            className="block py-1.5 px-3 text-xs text-gray-600 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/40"
+                            className={`block py-1.5 px-3 text-xs transition-colors rounded-lg ${
+                              isActiveRoute("/business-solution/hr-outsourcing")
+                                ? "text-emerald-700 bg-emerald-100/40"
+                                : "text-gray-600 hover:text-emerald-600 hover:bg-white/40"
+                            }`}
                             onClick={() => setIsOpen(false)}
                           >
                             HR Outsourcing
                           </Link>
                         </CollapsibleContent>
                       </Collapsible>
-                      <Link
-                        href="/blog"
-                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
-                        onClick={() => setIsOpen(false)}
-                      >
+                      <Link href="/blog" className={getMobileNavLinkClasses("/blog")} onClick={() => setIsOpen(false)}>
                         Blog
                       </Link>
                       <Link
                         href="/contact"
-                        className="flex items-center py-2 px-3 text-sm font-medium text-gray-700 hover:text-emerald-600 transition-colors rounded-lg hover:bg-white/60 backdrop-blur-sm"
+                        className={getMobileNavLinkClasses("/contact")}
                         onClick={() => setIsOpen(false)}
                       >
                         Contact Us
                       </Link>
                     </nav>
-                    {/* Mobile Language Selector */}
                     <div className="pt-3 mt-auto border-t border-emerald-200">
-                      <div className="bg-white/60 rounded-lg p-2 border border-emerald-200 backdrop-blur-sm">
-                        <LanguageSelector />
-                      </div>
+                      <LanguageSelector />
                     </div>
                   </div>
                 </SheetContent>

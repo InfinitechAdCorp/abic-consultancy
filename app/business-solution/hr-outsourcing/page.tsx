@@ -2,11 +2,12 @@
 
 import Navigation from "@/components/navigation"
 import Footer from "@/components/footer"
-import { Users, ArrowRight, CheckCircle, DollarSign, Clock, Award, Shield } from 'lucide-react'
+import { Users, ArrowRight, DollarSign, Clock, Award, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion" // Import motion for animations
+import { motion } from "framer-motion"
 import Link from "next/link"
+
 const cardVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0 },
@@ -17,51 +18,51 @@ export default function HROutsourcingPage() {
     {
       title: "Payroll & Benefits Administration",
       description: "Processing salaries, tax compliance, SSS, PhilHealth, Pag-IBIG contributions",
-      icon: DollarSign
+      icon: DollarSign,
     },
     {
       title: "Recruitment & Staffing Solutions",
       description: "End-to-end hiring, onboarding, and workforce planning",
-      icon: Users
+      icon: Users,
     },
     {
       title: "HR Administration & Employee Management",
       description: "Records management, contracts, performance tracking",
-      icon: Award
+      icon: Award,
     },
     {
       title: "Employee Engagement & Relations",
       description: "Conflict resolution, company culture programs",
-      icon: Users
+      icon: Users,
     },
     {
       title: "Labor Law Compliance & Risk Management",
       description: "DOLE compliance, disciplinary procedures, terminations",
-      icon: Shield
-    }
+      icon: Shield,
+    },
   ]
 
   const benefits = [
     {
       icon: DollarSign,
       title: "Reduce Costs",
-      description: "Significantly lower operational expenses compared to maintaining in-house HR teams"
+      description: "Significantly lower operational expenses compared to maintaining in-house HR teams",
     },
     {
       icon: Clock,
       title: "Improve Efficiency",
-      description: "Streamlined HR processes that save time and increase productivity"
+      description: "Streamlined HR processes that save time and increase productivity",
     },
     {
       icon: Shield,
       title: "Stay Compliant",
-      description: "Ensure full compliance with Philippine labor laws and regulations"
+      description: "Ensure full compliance with Philippine labor laws and regulations",
     },
     {
       icon: Award,
       title: "Expert Solutions",
-      description: "Access to specialized HR professionals and best practices"
-    }
+      description: "Access to specialized HR professionals and best practices",
+    },
   ]
 
   return (
@@ -71,27 +72,40 @@ export default function HROutsourcingPage() {
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-br from-green-50 via-blue-50 to-white overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle" style={{animationDelay: '1s'}}></div>
+        <div
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle"
+          style={{ animationDelay: "1s" }}
+        ></div>
         <div className="container mx-auto px-6 lg:px-8 relative z-10">
           <div className="max-w-4xl mx-auto text-center animate-fade-in-up">
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl mb-6">
-              HR <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">Outsourcing</span>
+              HR{" "}
+              <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                Outsourcing
+              </span>
             </h1>
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">
               Streamline Your Workforce Management with Expert HR Solutions
             </h2>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed max-w-3xl mx-auto">
-              We provide HR Outsourcing Services to help businesses reduce costs, improve efficiency, and stay compliant with labor laws
+              We provide HR Outsourcing Services to help businesses reduce costs, improve efficiency, and stay compliant
+              with labor laws
             </p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
             >
-              <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300">
-                Get HR Outsourcing Quote
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              {/* Updated to link to quote page */}
+              <Link href="/quote">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 transform hover:scale-105 transition-all duration-300"
+                >
+                  Get HR Outsourcing Quote
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -126,9 +140,7 @@ export default function HROutsourcingPage() {
                           <Icon className="h-8 w-8 text-white" />
                         </div>
                         <CardTitle className="text-xl mb-3">{service.title}</CardTitle>
-                        <CardDescription className="leading-relaxed">
-                          {service.description}
-                        </CardDescription>
+                        <CardDescription className="leading-relaxed">{service.description}</CardDescription>
                       </CardHeader>
                     </Card>
                   </motion.div>
@@ -146,11 +158,12 @@ export default function HROutsourcingPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 animate-fade-in-up">
               <h2 className="text-3xl font-bold mb-4">
-                Why Choose Our <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">HR Outsourcing</span>
+                Why Choose Our{" "}
+                <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                  HR Outsourcing
+                </span>
               </h2>
-              <p className="text-lg text-gray-600">
-                Key benefits that drive your business success
-              </p>
+              <p className="text-lg text-gray-600">Key benefits that drive your business success</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
               {benefits.map((benefit, index) => {
@@ -188,16 +201,30 @@ export default function HROutsourcingPage() {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12 animate-fade-in-up">
               <h2 className="text-3xl font-bold mb-4">Our Outsourcing Process</h2>
-              <p className="text-lg text-gray-600">
-                A systematic approach to seamless HR outsourcing implementation
-              </p>
+              <p className="text-lg text-gray-600">A systematic approach to seamless HR outsourcing implementation</p>
             </div>
             <div className="grid md:grid-cols-4 gap-6">
               {[
-                { step: "01", title: "Assessment", description: "Comprehensive analysis of your current HR needs and challenges" },
-                { step: "02", title: "Planning", description: "Develop customized HR outsourcing strategy and implementation plan" },
-                { step: "03", title: "Transition", description: "Smooth transition of HR functions with minimal business disruption" },
-                { step: "04", title: "Management", description: "Ongoing HR management with regular reporting and optimization" }
+                {
+                  step: "01",
+                  title: "Assessment",
+                  description: "Comprehensive analysis of your current HR needs and challenges",
+                },
+                {
+                  step: "02",
+                  title: "Planning",
+                  description: "Develop customized HR outsourcing strategy and implementation plan",
+                },
+                {
+                  step: "03",
+                  title: "Transition",
+                  description: "Smooth transition of HR functions with minimal business disruption",
+                },
+                {
+                  step: "04",
+                  title: "Management",
+                  description: "Ongoing HR management with regular reporting and optimization",
+                },
               ].map((process, index) => (
                 <motion.div
                   key={index}
@@ -224,38 +251,37 @@ export default function HROutsourcingPage() {
       </section>
 
       {/* CTA Section */}
-     <section className="py-16 bg-gradient-to-r from-green-600 to-blue-600 relative overflow-hidden">
-  <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
-  <div
-    className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle"
-    style={{ animationDelay: "1s" }}
-  ></div>
-  <div className="container mx-auto px-6 lg:px-8 relative z-10">
-    <div className="text-center text-white animate-fade-in-up">
-      <h2 className="text-3xl font-bold mb-4">
-        Ready to Outsource Your HR Operations?
-      </h2>
-      <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
-        Transform your HR operations with our comprehensive outsourcing solutions. Get a free consultation today.
-      </p>
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.4 }}
-      >
-        <Link href="/consultation">
-          <Button
-            size="lg"
-            className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 transform hover:scale-105 transition-all duration-300"
-          >
-            Get Free Consultation
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
-        </Link>
-      </motion.div>
-    </div>
-  </div>
-</section>
+      <section className="py-16 bg-gradient-to-r from-green-600 to-blue-600 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 bg-green-200/10 rounded-full blur-3xl animate-blob-subtle"></div>
+        <div
+          className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-blue-200/10 rounded-full blur-3xl animate-blob-subtle"
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div className="container mx-auto px-6 lg:px-8 relative z-10">
+          <div className="text-center text-white animate-fade-in-up">
+            <h2 className="text-3xl font-bold mb-4">Ready to Outsource Your HR Operations?</h2>
+            <p className="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
+              Transform your HR operations with our comprehensive outsourcing solutions. Get a free consultation today.
+            </p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+            >
+              {/* Updated to link to quote page */}
+              <Link href="/consultation">
+                <Button
+                  size="lg"
+                  className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 transform hover:scale-105 transition-all duration-300"
+                >
+                  Get Free Consultation
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </motion.div>
+          </div>
+        </div>
+      </section>
 
       <Footer />
 

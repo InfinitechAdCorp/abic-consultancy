@@ -33,7 +33,6 @@ interface BlogResponse {
 
 export default function BlogPage() {
   const [blogs, setBlogs] = useState<BlogPost[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [backendStatus, setBackendStatus] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
@@ -45,7 +44,6 @@ export default function BlogPage() {
 
   const fetchBlogs = async (page: number) => {
     try {
-      setLoading(true)
       const response = await fetch(`/api/blog?page=${page}&limit=9`)
 
       if (!response.ok) {
@@ -65,8 +63,6 @@ export default function BlogPage() {
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -82,19 +78,6 @@ export default function BlogPage() {
     if (!path) return null
     const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api", "") || "http://localhost:8000"
     return `${baseUrl}${path}?v=${Date.now()}`
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading blog posts...</p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (error) {

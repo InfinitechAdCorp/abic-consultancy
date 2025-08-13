@@ -13,7 +13,6 @@ import {
   Calculator,
   Receipt,
   TrendingUp,
-  Settings,
   HelpCircle,
   LogOut,
   MessageSquare,
@@ -24,6 +23,7 @@ import {
   Loader2,
   Headset,
   BookOpen,
+  QuoteIcon ,
 
 } from "lucide-react"
 import {
@@ -124,14 +124,29 @@ const systemItems = [
     icon: Home,
   },
   {
+    title: "Announcements",
+    url: "/admin/announcements",
+    icon: Megaphone,
+  },
+  {
     title: "Blog",
     url: "/admin/blog",
     icon: BookOpen,
+  },
+   {
+    title: "Chat Support",
+    url: "/admin/chat",
+    icon: Headset,
   },
   {
     title: "Consultations",
     url: "/admin/consultations",
     icon: MessageSquare,
+  },
+   {
+    title: "Events",
+    url: "/admin/events",
+    icon: Calendar,
   },
   {
     title: "Inquiries",
@@ -139,34 +154,14 @@ const systemItems = [
     icon: HelpCircle,
   },
   {
-    title: "Chat Support",
-    url: "/admin/chat",
-    icon: Headset,
-  },
-  {
     title: "Testimonials",
     url: "/admin/testimonials",
     icon: Star,
   },
   {
-    title: "Events",
-    url: "/admin/events",
-    icon: Calendar,
-  },
-  {
-    title: "Announcements",
-    url: "/admin/announcements",
-    icon: Megaphone,
-  },
-  {
-    title: "Settings",
-    url: "/admin/settings",
-    icon: Settings,
-  },
-  {
-    title: "Help",
-    url: "/admin/help",
-    icon: HelpCircle,
+    title: "Quote",
+    url: "/admin/quote",
+    icon: QuoteIcon,
   },
 ]
 

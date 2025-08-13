@@ -4,85 +4,152 @@ import {
   ArrowRight,
   CheckCircle,
   Star,
-  Award,
   Building2,
   Globe,
   CreditCard,
   HeadphonesIcon,
-  TrendingUp,
+  FileText,
+  Users,
+  Clock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
-import { motion, type Transition } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 
-// Static data for international visas, as provided
+// Updated visa badges with more engaging customer-focused language
 const visaDestinations = [
-  { id: 1, name: "China Visa", imagePath: "/images/great-wall-china.png", slug: "china-visa" },
+  {
+    id: 1,
+    name: "China Visa",
+    imagePath: "/images/great-wall-china.png",
+    slug: "china-visa",
+    badge: "As Fast As 7 Days",
+  },
   {
     id: 2,
     name: "Tourist Thailand Visa",
     imagePath: "/images/tourist-thailand-visa.png",
     slug: "tourist-thailand-visa",
+    badge: "Same Day Rush!",
   },
   {
     id: 3,
     name: "Destination Thailand Visa",
     imagePath: "/images/destination_thailand.png",
     slug: "destination-thailand-visa",
+    badge: "Express 3 Days!",
   },
-  { id: 4, name: "Italy Visa", imagePath: "/images/italy-visa.png", slug: "italy-visa" },
-  { id: 5, name: "Hong Kong Visa", imagePath: "/images/hong-kong-visa.png", slug: "hong-kong-visa" },
-  { id: 6, name: "Saudi Visa", imagePath: "/images/saudi-visa.png", slug: "saudi-visa" },
-  { id: 7, name: "Korea Visa", imagePath: "/images/korea-visa.png", slug: "korea-visa" },
-  { id: 8, name: "Schengen Visa", imagePath: "/images/schengen.png", slug: "schengen-visa" },
-  { id: 9, name: "Japan Visa", imagePath: "/images/japan-visa.png", slug: "japan-visa" },
-  { id: 10, name: "Canada Visa", imagePath: "/images/canada-visa.png", slug: "canada-visa" },
-  { id: 11, name: "USA Visa", imagePath: "/images/usa-visa.png", slug: "usa-visa" },
+  {
+    id: 4,
+    name: "Italy Visa",
+    imagePath: "/images/italy-visa.png",
+    slug: "italy-visa",
+    badge: "As Fast As 14 Days",
+  },
+  {
+    id: 5,
+    name: "Hong Kong Visa",
+    imagePath: "/images/hong-kong-visa.png",
+    slug: "hong-kong-visa",
+    badge: "Lightning 5 Days",
+  },
+  {
+    id: 6,
+    name: "Saudi Visa",
+    imagePath: "/images/saudi-visa.png",
+    slug: "saudi-visa",
+    badge: "As Fast As 10 Days",
+  },
+  {
+    id: 7,
+    name: "Korea Visa",
+    imagePath: "/images/korea-visa.png",
+    slug: "korea-visa",
+    badge: "Super Express 7 Days",
+  },
+  {
+    id: 8,
+    name: "Schengen Visa",
+    imagePath: "/images/schengen.png",
+    slug: "schengen-visa",
+    badge: "Ready in 15 Days",
+  },
+  {
+    id: 9,
+    name: "Japan Visa",
+    imagePath: "/images/japan-visa.png",
+    slug: "japan-visa",
+    badge: "Ultra Rush 5 Days!",
+  },
+  {
+    id: 10,
+    name: "Canada Visa",
+    imagePath: "/images/canada-visa.png",
+    slug: "canada-visa",
+    badge: "Guaranteed 21 Days",
+  },
+  {
+    id: 11,
+    name: "USA Visa",
+    imagePath: "/images/usa-visa.png",
+    slug: "usa-visa",
+    badge: "VIP Premium Service",
+  },
+]
+
+// Services data from navigation
+const servicesData = [
+  {
+    category: "Business Solution",
+    icon: Building2,
+    color: "from-emerald-500 to-teal-500",
+    services: [
+      { name: "Start-Up", href: "/services/business/startup" },
+      { name: "Amendment", href: "/services/business/amendment" },
+      { name: "Special License & Permit", href: "/services/business/license" },
+      { name: "Business Renewal", href: "/services/business/renewal" },
+      { name: "Business Closure", href: "/services/business/closure" },
+    ],
+  },
+  {
+    category: "Visa Services",
+    icon: Globe,
+    color: "from-blue-500 to-cyan-500",
+    services: [
+      { name: "Short Term Visa", href: "/services/visa/short-term" },
+      { name: "Long Term Visa", href: "/services/visa/long-term" },
+      { name: "International Visa", href: "/services/visa/international" },
+    ],
+  },
+  {
+    category: "Tax & Accounting",
+    icon: FileText,
+    color: "from-purple-500 to-indigo-500",
+    services: [
+      { name: "Tax Requirements", href: "/services/tax/requirements" },
+      { name: "Mandatory Taxes", href: "/services/tax/mandatory" },
+    ],
+  },
+  {
+    category: "HR Solutions",
+    icon: Users,
+    color: "from-orange-500 to-red-500",
+    services: [
+      { name: "HR Consulting", href: "/business-solution/hr-consulting" },
+      { name: "HR Outsourcing", href: "/business-solution/hr-outsourcing" },
+    ],
+  },
 ]
 
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
-  const [currentStat, setCurrentStat] = useState(0)
-
-  const stats = [
-    { number: "7+", label: "Years of Excellence", icon: Award },
-    { number: "500+", label: "Successful Businesses", icon: Building2 },
-    { number: "24/7", label: "Expert Support", icon: HeadphonesIcon },
-    { number: "98%", label: "Success Rate", icon: TrendingUp },
-  ]
 
   useEffect(() => {
     setIsVisible(true)
-    const interval = setInterval(() => {
-      setCurrentStat((prev) => (prev + 1) % stats.length)
-    }, 3000)
-    return () => clearInterval(interval)
   }, [])
-
-  const textVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.42, 0, 0.58, 1] } as Transition,
-    },
-  }
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.42, 0, 0.58, 1],
-        delay: 0.8,
-      } as Transition,
-    },
-  }
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8 lg:py-12">
@@ -121,27 +188,25 @@ export default function HeroSection() {
       </div>
 
       <div className="container mx-auto px-6 lg:px-8 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-8 items-start">
-          {/* Left Content - Reduced spacing */}
+        <div className="grid lg:grid-cols-2 gap-8 items-start mb-12">
           <div
             className={`space-y-6 transition-all duration-1000 ${
               isVisible ? "translate-x-0 opacity-100" : "-translate-x-10 opacity-0"
             }`}
           >
-            <motion.div initial="hidden" animate="visible" variants={textVariants} transition={{ delay: 0.1 }}>
+            <div>
               <div className="inline-flex items-center rounded-full border border-green-200 bg-green-50 px-4 py-2 text-sm font-medium text-green-700 animate-fade-in">
                 <Star className="mr-2 h-4 w-4 fill-current animate-spin" style={{ animationDuration: "3s" }} />
                 #1 Trusted Business Consultancy in Philippines
               </div>
               <h1 className="text-2xl font-bold tracking-tight sm:text-4xl lg:text-4xl leading-tight mt-1">
-                <span className="inline-block animate-fade-in-up">Your Gateway to  Business Success</span>
+                <span className="inline-block animate-fade-in-up">Your Gateway to Business Success</span>
                 <span
                   className="block bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mt-1 animate-fade-in-up"
                   style={{ animationDelay: "0.2s" }}
                 >
-                   in the Philippines
+                  in the Philippines
                 </span>
-               
               </h1>
               <p
                 className={`text-lg text-gray-600 max-w-[600px] leading-relaxed transition-all duration-1000 ${
@@ -203,13 +268,9 @@ export default function HeroSection() {
                   24/7 Support
                 </div>
               </div>
-            </motion.div>
+            </div>
 
-            {/* Transparent Launch Card - Reduced spacing */}
-            <motion.div
-              initial="hidden"
-              animate="visible"
-              variants={cardVariants}
+            <div
               className={`mt-6 p-5 bg-white/20 backdrop-blur-xl rounded-xl shadow-xl border border-white/10 transition-all duration-1000 ${
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
               }`}
@@ -230,45 +291,9 @@ export default function HeroSection() {
                   <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
                 </Button>
               </Link>
-            </motion.div>
-
-            <div
-              className={`grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200 transition-all duration-1000 ${
-                isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
-              }`}
-              style={{ transitionDelay: "1s" }}
-            >
-              {stats.map((stat, index) => {
-                const Icon = stat.icon
-                return (
-                  <div
-                    key={index}
-                    className={`text-center transform transition-all duration-500 ${
-                      currentStat === index ? "scale-110" : "scale-100"
-                    }`}
-                  >
-                    <div className="flex items-center justify-center mb-2">
-                      <Icon
-                        className={`h-5 w-5 mr-2 transition-colors duration-300 ${
-                          currentStat === index ? "text-green-600" : "text-gray-400"
-                        }`}
-                      />
-                      <div
-                        className={`text-2xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent transition-all duration-300 ${
-                          currentStat === index ? "scale-110" : "scale-100"
-                        }`}
-                      >
-                        {stat.number}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 font-medium">{stat.label}</div>
-                  </div>
-                )
-              })}
             </div>
           </div>
 
-          {/* Right International Visa Cards Grid - More visa options */}
           <div
             className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 transition-all duration-1000 ${
               isVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
@@ -276,15 +301,14 @@ export default function HeroSection() {
             style={{ transitionDelay: "0.4s" }}
           >
             {visaDestinations.map((visa, index) => (
-              <motion.div
-                key={visa.id}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.2 }}
-                variants={textVariants}
-                transition={{ delay: 0.05 * index }}
-              >
-                <Card className="transform hover:scale-105 transition-all duration-500 shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col">
+              <div key={visa.id} className="transform hover:scale-105 transition-all duration-500">
+                <Card className="shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col relative">
+                  {/* Enhanced badge with better hover interaction */}
+                  <Badge className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse hover:animate-none transition-all duration-300">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {visa.badge}
+                  </Badge>
+
                   <Link href={`/services/visa/international/${visa.slug}`} passHref className="flex flex-col h-full">
                     <div className="relative w-full h-[90px] overflow-hidden">
                       <Image
@@ -301,8 +325,57 @@ export default function HeroSection() {
                     </CardContent>
                   </Link>
                 </Card>
-              </motion.div>
+              </div>
             ))}
+          </div>
+        </div>
+
+        <div
+          className={`transition-all duration-1000 ${
+            isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
+          }`}
+          style={{ transitionDelay: "1s" }}
+        >
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-gray-900 mb-2">Our Services</h3>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Click on any service to learn more about how we can help your business succeed
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+            {servicesData.map((category, categoryIndex) => {
+              const Icon = category.icon
+              return (
+                <div
+                  key={category.category}
+                  className="bg-white/40 backdrop-blur-sm rounded-xl p-6 border border-white/30 hover:bg-white/50 transition-all duration-300 hover:shadow-lg group"
+                >
+                  <div className="flex items-center mb-4">
+                    <div
+                      className={`p-3 rounded-xl bg-gradient-to-r ${category.color} mr-4 flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
+                    >
+                      <Icon className="h-6 w-6 text-white" />
+                    </div>
+                    <h4 className="font-bold text-xl text-gray-900">{category.category}</h4>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {category.services.map((service, serviceIndex) => (
+                      <Link key={service.name} href={service.href}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-9 px-4 text-sm font-medium text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-500 transition-all duration-300 rounded-lg border border-gray-200 hover:border-transparent bg-white/80 hover:shadow-md hover:scale-105"
+                        >
+                          <span className="whitespace-nowrap">{service.name}</span>
+                        </Button>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

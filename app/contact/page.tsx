@@ -305,14 +305,19 @@ export default function ContactPage() {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+63 917-123-4567"
-                        className="h-12 text-base"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
-                      />
+                     <Input
+  id="phone"
+  type="tel"
+  placeholder="+63 917-123-4567"
+  className="h-12 text-base"
+  value={phone}
+  onChange={(e) => {
+    // Allow only numbers, spaces, dashes, parentheses, and plus sign
+    const filteredValue = e.target.value.replace(/[^0-9+\-\s()]/g, "")
+    setPhone(filteredValue)
+  }}
+/>
+
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="service">Service Interested In</Label>
