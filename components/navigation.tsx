@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { ChevronDown, Menu } from "lucide-react"
+import { ChevronDown, Menu, Facebook, MessageCircle, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   NavigationMenu,
@@ -180,7 +180,7 @@ export default function Navigation() {
                               <NavigationMenuLink key={item.name} asChild>
                                 <Link
                                   href={item.href}
-                                  className="block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 focus:bg-emerald-50 focus:text-emerald-600"
+                                  className="block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 focus:bg-emerald-50 focus:text-emerald-600 focus:outline-none border border-emerald-100 hover:border-emerald-200"
                                 >
                                   <div className="text-sm font-medium leading-none">{item.name}</div>
                                 </Link>
@@ -413,8 +413,66 @@ export default function Navigation() {
                         Contact Us
                       </Link>
                     </nav>
-                    <div className="pt-3 mt-auto border-t border-emerald-200">
+                    <div className="pt-3 border-t border-emerald-200">
                       <LanguageSelector />
+                    </div>
+                    <div className="space-y-3 py-4">
+                      <div className="text-center space-y-2">
+                        <div className="text-xs font-medium text-emerald-600 uppercase tracking-wide">
+                          Quick Contact
+                        </div>
+                        <div className="space-y-1">
+                          <a
+                            href="tel:+639155800518"
+                            className="flex items-center justify-center space-x-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                          >
+                            <span>📞</span>
+                            <span>+63 915 580 0518</span>
+                          </a>
+                          <a
+                            href="mailto:zoe@abicph.com"
+                            className="flex items-center justify-center space-x-2 text-sm text-gray-600 hover:text-emerald-600 transition-colors"
+                          >
+                            <span>✉️</span>
+                            <span>zoe@abicph.com</span>
+                          </a>
+                        </div>
+                      </div>
+                      <div className="flex justify-center space-x-4">
+                        <a
+                          href="https://www.facebook.com/people/Advance-Beyond-International-Consulting-Inc/100064218002344/?rdid=9l5ALMAI7iEncSMo&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AMRDepebP%2F"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 bg-white/60 rounded-full flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-200"
+                        >
+                          <Facebook className="w-4 h-4" />
+                        </a>
+                        <a
+                          href="https://t.me/+639155800518"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 bg-white/60 rounded-full flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-200"
+                        >
+                          <Send className="w-4 h-4" />
+                        </a>
+                        <a
+                          href="https://wa.me/639155800518"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-8 h-8 bg-white/60 rounded-full flex items-center justify-center text-emerald-600 hover:bg-emerald-100 transition-colors border border-emerald-200"
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex-1 flex items-end justify-center pb-4">
+                      <div className="text-center space-y-2">
+                        <div className="h-px bg-gradient-to-r from-transparent via-emerald-300 to-transparent w-24 mx-auto opacity-50"></div>
+                        <p className="text-sm font-medium bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent px-4">
+                          Your Gateway to Business Success
+                        </p>
+                        <div className="h-px bg-gradient-to-r from-transparent via-emerald-300 to-transparent w-16 mx-auto opacity-30"></div>
+                      </div>
                     </div>
                   </div>
                 </SheetContent>

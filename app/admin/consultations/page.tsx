@@ -1,160 +1,232 @@
-"use client"
+"use client";
 
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { AppSidebar } from "@/components/app-sidebar"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Eye, Reply, Plus, Search, Filter, Calendar, User, Phone, Mail, Globe, Building2, Clock, MessageSquare, Send, X, CheckCircle, AlertCircle, XCircle, Loader2, Archive, Star, StarOff, RefreshCw, ArrowUpDown, Edit, Trash2 } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useState, useEffect } from "react"
-import { useToast } from "@/components/ui/use-toast"
-import { DataTable } from "@/components/ui/data-table"
-import { ColumnDef, ColumnFiltersState, RowSelectionState, useReactTable, getCoreRowModel, getFilteredRowModel } from "@tanstack/react-table"
-import { Checkbox } from "@/components/ui/checkbox"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  MoreHorizontal,
+  Eye,
+  Reply,
+  Plus,
+  Search,
+  Filter,
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  Globe,
+  Building2,
+  Clock,
+  MessageSquare,
+  Send,
+  X,
+  CheckCircle,
+  AlertCircle,
+  XCircle,
+  Loader2,
+  Archive,
+  Star,
+  StarOff,
+  ArrowUpDown,
+  Edit,
+  Trash2,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { useState, useEffect } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { DataTable } from "@/components/ui/data-table";
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  RowSelectionState,
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+} from "@tanstack/react-table";
+import { Checkbox } from "@/components/ui/checkbox";
 
 // Consultation data type
 type Consultation = {
-  id: number
-  first_name: string
-  last_name: string
-  email: string
-  phone: string
-  country: string
-  service_type: string
-  other_service_details?: string
-  consultation_type: string
-  preferred_date: string
-  preferred_time: string
-  message?: string
-  agree_to_terms: boolean
-  subscribe_newsletter: boolean
-  status: "pending" | "confirmed" | "completed" | "cancelled"
-  created_at: string
-  updated_at: string
-}
+  id: number;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  country: string;
+  service_type: string;
+  other_service_details?: string;
+  consultation_type: string;
+  preferred_date: string;
+  preferred_time: string;
+  message?: string;
+  agree_to_terms: boolean;
+  subscribe_newsletter: boolean;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  created_at: string;
+  updated_at: string;
+};
 
 // Service type labels
 const serviceTypeLabels: Record<string, string> = {
-  'business-setup': 'Business Setup & Registration',
-  'visa-services': 'Visa & Immigration Services',
-  'tax-accounting': 'Tax & Accounting Services',
-  'license-permit': 'License & Permit Applications',
-  'business-renewal': 'Business Renewal Services',
-  'amendment': 'Business Amendment Services',
-  'consultation': 'General Business Consultation',
-  'other': 'Other Services'
-}
+  "business-setup": "Business Setup & Registration",
+  "visa-services": "Visa & Immigration Services",
+  "tax-accounting": "Tax & Accounting Services",
+  "license-permit": "License & Permit Applications",
+  "business-renewal": "Business Renewal Services",
+  amendment: "Business Amendment Services",
+  consultation: "General Business Consultation",
+  other: "Other Services",
+};
 
 // Consultation type labels
 const consultationTypeLabels: Record<string, string> = {
-  'online': 'Online (Video Call)',
-  'phone': 'Phone Call',
-  'office': 'In-Person (Office Visit)'
-}
+  online: "Online (Video Call)",
+  phone: "Phone Call",
+  office: "In-Person (Office Visit)",
+};
 
 // Country codes to names (basic mapping)
 const countryNames: Record<string, string> = {
-  'PH': 'Philippines',
-  'US': 'United States',
-  'CA': 'Canada',
-  'AU': 'Australia',
-  'GB': 'United Kingdom',
-  'SG': 'Singapore',
-  'JP': 'Japan',
-  'KR': 'South Korea'
-}
+  PH: "Philippines",
+  US: "United States",
+  CA: "Canada",
+  AU: "Australia",
+  GB: "United Kingdom",
+  SG: "Singapore",
+  JP: "Japan",
+  KR: "South Korea",
+};
 
 export default function ConsultationsPage() {
-  const [consultations, setConsultations] = useState<Consultation[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedConsultation, setSelectedConsultation] = useState<Consultation | null>(null)
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [serviceFilter, setServiceFilter] = useState("all")
-  const [showReplyDialog, setShowReplyDialog] = useState(false)
-  const [replySubject, setReplySubject] = useState("")
-  const [replyMessage, setReplyMessage] = useState("")
-  const [sendingReply, setSendingReply] = useState(false)
+  const [consultations, setConsultations] = useState<Consultation[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedConsultation, setSelectedConsultation] =
+    useState<Consultation | null>(null);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [serviceFilter, setServiceFilter] = useState("all");
+  const [showReplyDialog, setShowReplyDialog] = useState(false);
+  const [replySubject, setReplySubject] = useState("");
+  const [replyMessage, setReplyMessage] = useState("");
+  const [sendingReply, setSendingReply] = useState(false);
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     confirmed: 0,
     completed: 0,
-    cancelled: 0
-  })
-  const { toast } = useToast()
+    cancelled: 0,
+  });
+  const { toast } = useToast();
 
   // New states for Edit and Delete
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [editingConsultation, setEditingConsultation] = useState<Consultation | null>(null)
-  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false)
-  const [deletingConsultationId, setDeletingConsultationId] = useState<number | null>(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingConsultation, setEditingConsultation] =
+    useState<Consultation | null>(null);
+  const [showDeleteConfirmDialog, setShowDeleteConfirmDialog] = useState(false);
+  const [deletingConsultationId, setDeletingConsultationId] = useState<
+    number | null
+  >(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // DataTable states managed by ConsultationsPage for specific column filters
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [globalFilter, setGlobalFilter] = useState('') // Global filter state managed here
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [globalFilter, setGlobalFilter] = useState(""); // Global filter state managed here
 
   // State for mobile detection, used for default sidebar open state
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
-    }
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   // Helper functions for status icons and badges
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />
-      case 'pending':
-        return <Clock className="h-4 w-4 text-yellow-500" />
-      case 'confirmed':
-        return <AlertCircle className="h-4 w-4 text-blue-500" />
-      case 'cancelled':
-        return <XCircle className="h-4 w-4 text-red-500" />
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case "pending":
+        return <Clock className="h-4 w-4 text-yellow-500" />;
+      case "confirmed":
+        return <AlertCircle className="h-4 w-4 text-blue-500" />;
+      case "cancelled":
+        return <XCircle className="h-4 w-4 text-red-500" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      completed: 'default',
-      pending: 'secondary',
-      confirmed: 'outline',
-      cancelled: 'destructive'
-    } as const
+      completed: "default",
+      pending: "secondary",
+      confirmed: "outline",
+      cancelled: "destructive",
+    } as const;
     return (
-      <Badge variant={variants[status as keyof typeof variants] || 'secondary'} className="flex items-center gap-1">
+      <Badge
+        variant={variants[status as keyof typeof variants] || "secondary"}
+        className="flex items-center gap-1"
+      >
         {getStatusIcon(status)}
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </Badge>
-    )
-  }
+    );
+  };
 
   const getPriorityColor = (consultation: Consultation) => {
-    const daysSinceCreated = Math.floor((new Date().getTime() - new Date(consultation.created_at).getTime()) / (1000 * 60 * 60 * 24))
-    if (consultation.status === 'pending' && daysSinceCreated > 2) return 'border-l-red-500'
-    if (consultation.status === 'pending' && daysSinceCreated > 1) return 'border-l-yellow-500'
-    if (consultation.status === 'confirmed') return 'border-l-blue-500'
-    if (consultation.status === 'completed') return 'border-l-green-500'
-    return 'border-l-gray-200'
-  }
+    const daysSinceCreated = Math.floor(
+      (new Date().getTime() - new Date(consultation.created_at).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+    if (consultation.status === "pending" && daysSinceCreated > 2)
+      return "border-l-red-500";
+    if (consultation.status === "pending" && daysSinceCreated > 1)
+      return "border-l-yellow-500";
+    if (consultation.status === "confirmed") return "border-l-blue-500";
+    if (consultation.status === "completed") return "border-l-green-500";
+    return "border-l-gray-200";
+  };
 
   // Define columns for DataTable
   const columns: ColumnDef<Consultation>[] = [
@@ -259,7 +331,8 @@ export default function ConsultationsPage() {
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => new Date(row.original.preferred_date).toLocaleDateString(),
+      cell: ({ row }) =>
+        new Date(row.original.preferred_date).toLocaleDateString(),
     },
     {
       id: "actions",
@@ -270,7 +343,11 @@ export default function ConsultationsPage() {
           <div className="flex items-center gap-2">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedConsultation(consultation)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelectedConsultation(consultation)}
+                >
                   <Eye className="h-4 w-4" />
                   <span className="ml-1 sm:hidden">View</span>
                 </Button>
@@ -288,90 +365,174 @@ export default function ConsultationsPage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-4">
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Client Name</Label>
-                            <p className="text-lg font-semibold">{selectedConsultation.first_name} {selectedConsultation.last_name}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Client Name
+                            </Label>
+                            <p className="text-lg font-semibold">
+                              {selectedConsultation.first_name}{" "}
+                              {selectedConsultation.last_name}
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Email</Label>
-                            <p className="text-sm break-all">{selectedConsultation.email}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Email
+                            </Label>
+                            <p className="text-sm break-all">
+                              {selectedConsultation.email}
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Phone</Label>
-                            <p className="text-sm">{selectedConsultation.phone}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Phone
+                            </Label>
+                            <p className="text-sm">
+                              {selectedConsultation.phone}
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Country</Label>
-                            <p className="text-sm">{countryNames[selectedConsultation.country] || selectedConsultation.country}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Country
+                            </Label>
+                            <p className="text-sm">
+                              {countryNames[selectedConsultation.country] ||
+                                selectedConsultation.country}
+                            </p>
                           </div>
                         </div>
                         <div className="space-y-4">
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Service Type</Label>
-                            <p className="text-sm">{serviceTypeLabels[selectedConsultation.service_type]}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Service Type
+                            </Label>
+                            <p className="text-sm">
+                              {
+                                serviceTypeLabels[
+                                  selectedConsultation.service_type
+                                ]
+                              }
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Consultation Type</Label>
-                            <p className="text-sm">{consultationTypeLabels[selectedConsultation.consultation_type]}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Consultation Type
+                            </Label>
+                            <p className="text-sm">
+                              {
+                                consultationTypeLabels[
+                                  selectedConsultation.consultation_type
+                                ]
+                              }
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Preferred Date</Label>
-                            <p className="text-sm">{new Date(selectedConsultation.preferred_date).toLocaleDateString('en-US', {
-                              weekday: 'long',
-                              year: 'numeric',
-                              month: 'long',
-                              day: 'numeric'
-                            })}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Preferred Date
+                            </Label>
+                            <p className="text-sm">
+                              {new Date(
+                                selectedConsultation.preferred_date
+                              ).toLocaleDateString("en-US", {
+                                weekday: "long",
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </p>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium text-gray-500">Preferred Time</Label>
-                            <p className="text-sm">{selectedConsultation.preferred_time}</p>
+                            <Label className="text-sm font-medium text-gray-500">
+                              Preferred Time
+                            </Label>
+                            <p className="text-sm">
+                              {selectedConsultation.preferred_time}
+                            </p>
                           </div>
                         </div>
                       </div>
                       {selectedConsultation.other_service_details && (
                         <div>
-                          <Label className="text-sm font-medium text-gray-500">Other Service Details</Label>
-                          <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">{selectedConsultation.other_service_details}</p>
+                          <Label className="text-sm font-medium text-gray-500">
+                            Other Service Details
+                          </Label>
+                          <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">
+                            {selectedConsultation.other_service_details}
+                          </p>
                         </div>
                       )}
                       {selectedConsultation.message && (
                         <div>
-                          <Label className="text-sm font-medium text-gray-500">Message</Label>
-                          <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">{selectedConsultation.message}</p>
+                          <Label className="text-sm font-medium text-gray-500">
+                            Message
+                          </Label>
+                          <p className="text-sm mt-1 p-3 bg-gray-50 rounded-md">
+                            {selectedConsultation.message}
+                          </p>
                         </div>
                       )}
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                          <Label className="text-sm font-medium text-gray-500">Newsletter Subscription</Label>
-                          <p className="text-sm">{selectedConsultation.subscribe_newsletter ? 'Yes' : 'No'}</p>
+                          <Label className="text-sm font-medium text-gray-500">
+                            Newsletter Subscription
+                          </Label>
+                          <p className="text-sm">
+                            {selectedConsultation.subscribe_newsletter
+                              ? "Yes"
+                              : "No"}
+                          </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium text-gray-500">Submitted</Label>
-                          <p className="text-sm">{new Date(selectedConsultation.created_at).toLocaleString()}</p>
+                          <Label className="text-sm font-medium text-gray-500">
+                            Submitted
+                          </Label>
+                          <p className="text-sm">
+                            {new Date(
+                              selectedConsultation.created_at
+                            ).toLocaleString()}
+                          </p>
                         </div>
                       </div>
                       {/* Status Update */}
                       <div className="border-t pt-4">
-                        <Label className="text-sm font-medium text-gray-500">Update Status</Label>
+                        <Label className="text-sm font-medium text-gray-500">
+                          Update Status
+                        </Label>
                         <div className="flex flex-wrap gap-2 mt-2">
                           <Button
                             size="sm"
-                            variant={selectedConsultation.status === 'confirmed' ? 'default' : 'outline'}
-                            onClick={() => updateStatus(selectedConsultation.id, 'confirmed')}
+                            variant={
+                              selectedConsultation.status === "confirmed"
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateStatus(selectedConsultation.id, "confirmed")
+                            }
                           >
                             Confirm
                           </Button>
                           <Button
                             size="sm"
-                            variant={selectedConsultation.status === 'completed' ? 'default' : 'outline'}
-                            onClick={() => updateStatus(selectedConsultation.id, 'completed')}
+                            variant={
+                              selectedConsultation.status === "completed"
+                                ? "default"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateStatus(selectedConsultation.id, "completed")
+                            }
                           >
                             Complete
                           </Button>
                           <Button
                             size="sm"
-                            variant={selectedConsultation.status === 'cancelled' ? 'destructive' : 'outline'}
-                            onClick={() => updateStatus(selectedConsultation.id, 'cancelled')}
+                            variant={
+                              selectedConsultation.status === "cancelled"
+                                ? "destructive"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateStatus(selectedConsultation.id, "cancelled")
+                            }
                           >
                             Cancel
                           </Button>
@@ -379,7 +540,10 @@ export default function ConsultationsPage() {
                       </div>
                       {/* Actions */}
                       <div className="border-t pt-4 flex gap-2">
-                        <Button onClick={() => prepareReply(selectedConsultation)} className="flex-1">
+                        <Button
+                          onClick={() => prepareReply(selectedConsultation)}
+                          className="flex-1"
+                        >
                           <Reply className="mr-2 h-4 w-4" />
                           Reply to Client
                         </Button>
@@ -405,11 +569,15 @@ export default function ConsultationsPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => updateStatus(consultation.id, 'confirmed')}>
+                <DropdownMenuItem
+                  onClick={() => updateStatus(consultation.id, "confirmed")}
+                >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Mark as Confirmed
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => updateStatus(consultation.id, 'completed')}>
+                <DropdownMenuItem
+                  onClick={() => updateStatus(consultation.id, "completed")}
+                >
                   <CheckCircle className="mr-2 h-4 w-4" />
                   Mark as Completed
                 </DropdownMenuItem>
@@ -428,7 +596,7 @@ export default function ConsultationsPage() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-red-600"
-                  onClick={() => updateStatus(consultation.id, 'cancelled')}
+                  onClick={() => updateStatus(consultation.id, "cancelled")}
                 >
                   <XCircle className="mr-2 h-4 w-4" />
                   Cancel Consultation
@@ -445,10 +613,10 @@ export default function ConsultationsPage() {
   useEffect(() => {
     const newColumnFilters: ColumnFiltersState = [];
     if (statusFilter !== "all") {
-      newColumnFilters.push({ id: 'status', value: statusFilter });
+      newColumnFilters.push({ id: "status", value: statusFilter });
     }
     if (serviceFilter !== "all") {
-      newColumnFilters.push({ id: 'service_type', value: serviceFilter });
+      newColumnFilters.push({ id: "service_type", value: serviceFilter });
     }
     setColumnFilters(newColumnFilters);
   }, [statusFilter, serviceFilter]);
@@ -456,80 +624,80 @@ export default function ConsultationsPage() {
   // Fetch consultations
   const fetchConsultations = async () => {
     try {
-      setLoading(true)
-      const response = await fetch('/api/consultations/list')
-      const result = await response.json()
+      setLoading(true);
+      const response = await fetch("/api/consultations/list");
+      const result = await response.json();
       if (result.success && result.data?.data) {
-        setConsultations(result.data.data)
+        setConsultations(result.data.data);
       }
     } catch (error) {
-      console.error('Failed to fetch consultations:', error)
+      console.error("Failed to fetch consultations:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load consultations"
-      })
+        description: "Failed to load consultations",
+      });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Fetch stats
   const fetchStats = async () => {
     try {
-      const response = await fetch('/api/consultations/stats')
-      const result = await response.json()
+      const response = await fetch("/api/consultations/stats");
+      const result = await response.json();
       if (result.success && result.data) {
-        setStats(result.data)
+        setStats(result.data);
       }
     } catch (error) {
-      console.error('Failed to fetch stats:', error)
+      console.error("Failed to fetch stats:", error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchConsultations()
-    fetchStats()
-  }, [])
+    fetchConsultations();
+    fetchStats();
+  }, []);
 
   // Update consultation status
   const updateStatus = async (id: number, newStatus: string) => {
     try {
       const response = await fetch(`/api/consultations/${id}`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus })
-      })
+        body: JSON.stringify({ status: newStatus }),
+      });
       if (response.ok) {
-        setConsultations(prev =>
-          prev.map(consultation =>
+        setConsultations((prev) =>
+          prev.map((consultation) =>
             consultation.id === id
               ? { ...consultation, status: newStatus as any }
               : consultation
           )
-        )
+        );
         toast({
           title: "Success",
-          description: "Status updated successfully"
-        })
-        fetchStats() // Refresh stats
+          description: "Status updated successfully",
+        });
+        fetchStats(); // Refresh stats
       } else {
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to update status"
-        })
+          description: "Failed to update status",
+        });
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update status"
-      })
+        description: "Failed to update status",
+      });
     }
-  }
+  };
 
   // Handle Edit Consultation
   const handleEdit = (consultation: Consultation) => {
@@ -544,7 +712,7 @@ export default function ConsultationsPage() {
     setIsSaving(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // In a real app, you'd send editingConsultation to your API
       // const response = await fetch(`/api/consultations/${editingConsultation.id}`, {
       //   method: 'PUT', // or PATCH
@@ -553,12 +721,14 @@ export default function ConsultationsPage() {
       // });
       // if (!response.ok) throw new Error('Failed to save consultation');
 
-      setConsultations(prev =>
-        prev.map(c => (c.id === editingConsultation.id ? editingConsultation : c))
+      setConsultations((prev) =>
+        prev.map((c) =>
+          c.id === editingConsultation.id ? editingConsultation : c
+        )
       );
       toast({
         title: "Success",
-        description: "Consultation updated successfully."
+        description: "Consultation updated successfully.",
       });
       setShowEditDialog(false);
       setEditingConsultation(null);
@@ -567,7 +737,7 @@ export default function ConsultationsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to save consultation."
+        description: "Failed to save consultation.",
       });
     } finally {
       setIsSaving(false);
@@ -587,17 +757,19 @@ export default function ConsultationsPage() {
     setIsDeleting(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
       // In a real app, you'd send a DELETE request to your API
       // const response = await fetch(`/api/consultations/${deletingConsultationId}`, {
       //   method: 'DELETE'
       // });
       // if (!response.ok) throw new Error('Failed to delete consultation');
 
-      setConsultations(prev => prev.filter(c => c.id !== deletingConsultationId));
+      setConsultations((prev) =>
+        prev.filter((c) => c.id !== deletingConsultationId)
+      );
       toast({
         title: "Success",
-        description: "Consultation deleted successfully."
+        description: "Consultation deleted successfully.",
       });
       setShowDeleteConfirmDialog(false);
       setDeletingConsultationId(null);
@@ -607,13 +779,12 @@ export default function ConsultationsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to delete consultation."
+        description: "Failed to delete consultation.",
       });
     } finally {
       setIsDeleting(false);
     }
   };
-
 
   // Send reply email
   const sendReply = async () => {
@@ -621,55 +792,65 @@ export default function ConsultationsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please fill in all fields"
-      })
-      return
+        description: "Please fill in all fields",
+      });
+      return;
     }
     try {
-      setSendingReply(true)
-      const response = await fetch('/api/consultations/reply', {
-        method: 'POST',
+      setSendingReply(true);
+      const response = await fetch("/api/consultations/reply", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           consultationId: selectedConsultation.id,
           to: selectedConsultation.email,
           subject: replySubject,
           message: replyMessage,
-          clientName: `${selectedConsultation.first_name} ${selectedConsultation.last_name}`
-        })
-      })
-      const result = await response.json()
+          clientName: `${selectedConsultation.first_name} ${selectedConsultation.last_name}`,
+        }),
+      });
+      const result = await response.json();
       if (result.success) {
         toast({
           title: "Success",
-          description: "Reply sent successfully"
-        })
-        setShowReplyDialog(false)
-        setReplySubject("")
-        setReplyMessage("")
+          description: "Reply sent successfully",
+        });
+        setShowReplyDialog(false);
+        setReplySubject("");
+        setReplyMessage("");
       } else {
-        throw new Error(result.message)
+        throw new Error(result.message);
       }
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to send reply"
-      })
+        description: "Failed to send reply",
+      });
     } finally {
-      setSendingReply(false)
+      setSendingReply(false);
     }
-  }
+  };
 
   // Prepare reply
   const prepareReply = (consultation: Consultation) => {
-    setSelectedConsultation(consultation)
-    setReplySubject(`Re: Your Consultation Request - ${serviceTypeLabels[consultation.service_type]}`)
-    setReplyMessage(`Dear ${consultation.first_name} ${consultation.last_name},Thank you for your consultation request regarding ${serviceTypeLabels[consultation.service_type]}.`)
-    setShowReplyDialog(true)
-  }
+    setSelectedConsultation(consultation);
+    setReplySubject(
+      `Re: Your Consultation Request - ${
+        serviceTypeLabels[consultation.service_type]
+      }`
+    );
+    setReplyMessage(
+      `Dear ${consultation.first_name} ${
+        consultation.last_name
+      },Thank you for your consultation request regarding ${
+        serviceTypeLabels[consultation.service_type]
+      }.`
+    );
+    setShowReplyDialog(true);
+  };
 
   // Initialize table instance at the top level
   const table = useReactTable({
@@ -694,14 +875,14 @@ export default function ConsultationsPage() {
           </div>
         </div>
       </SidebarProvider>
-    )
+    );
   }
 
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <div className={`flex-1 min-w-0 ${isMobile ? 'ml-0' : 'ml-72'}`}>
+        <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           {isMobile && (
             <div className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b bg-background px-4 md:hidden">
               <SidebarTrigger className="-ml-1" />
@@ -717,14 +898,9 @@ export default function ConsultationsPage() {
             )}
             <div className="flex items-center justify-between w-full">
               <div>
-                <h1 className="text-lg font-semibold">Consultations</h1>
+                <h1 className="text-lg font-semibold">Outsourcing</h1>
               </div>
-              <div className="flex items-center gap-3">
-                <Button variant="outline" size="sm" onClick={fetchConsultations}>
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Refresh
-                </Button>
-              </div>
+              <div className="flex items-center gap-3"></div>
             </div>
           </header>
           <main className="flex-1 overflow-auto p-4 md:p-6">
@@ -734,7 +910,10 @@ export default function ConsultationsPage() {
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
                     <div className="flex gap-2 w-full sm:w-auto">
-                      <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <Select
+                        value={statusFilter}
+                        onValueChange={setStatusFilter}
+                      >
                         <SelectTrigger className="w-full sm:w-32">
                           <SelectValue placeholder="Status" />
                         </SelectTrigger>
@@ -746,15 +925,22 @@ export default function ConsultationsPage() {
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Select value={serviceFilter} onValueChange={setServiceFilter}>
+                      <Select
+                        value={serviceFilter}
+                        onValueChange={setServiceFilter}
+                      >
                         <SelectTrigger className="w-full sm:w-40">
                           <SelectValue placeholder="Service" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Services</SelectItem>
-                          {Object.entries(serviceTypeLabels).map(([key, label]) => (
-                            <SelectItem key={key} value={key}>{label}</SelectItem>
-                          ))}
+                          {Object.entries(serviceTypeLabels).map(
+                            ([key, label]) => (
+                              <SelectItem key={key} value={key}>
+                                {label}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -762,7 +948,8 @@ export default function ConsultationsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-sm text-muted-foreground mb-4">
-                    Showing {table.getFilteredRowModel().rows.length} of {consultations.length} consultations
+                    Showing {table.getFilteredRowModel().rows.length} of{" "}
+                    {consultations.length} consultations
                   </div>
                   {/* Added overflow-x-auto wrapper for the DataTable */}
                   <div className="w-full overflow-x-auto">
@@ -787,7 +974,10 @@ export default function ConsultationsPage() {
       <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Reply to {selectedConsultation?.first_name} {selectedConsultation?.last_name}</DialogTitle>
+            <DialogTitle>
+              Reply to {selectedConsultation?.first_name}{" "}
+              {selectedConsultation?.last_name}
+            </DialogTitle>
             <DialogDescription>
               Send a personalized reply to the client's consultation request
             </DialogDescription>
@@ -814,10 +1004,18 @@ export default function ConsultationsPage() {
               />
             </div>
             <div className="flex flex-col sm:flex-row justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowReplyDialog(false)} className="w-full sm:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => setShowReplyDialog(false)}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
-              <Button onClick={sendReply} disabled={sendingReply} className="w-full sm:w-auto">
+              <Button
+                onClick={sendReply}
+                disabled={sendingReply}
+                className="w-full sm:w-auto"
+              >
                 {sendingReply ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -854,7 +1052,10 @@ export default function ConsultationsPage() {
                   id="first_name"
                   value={editingConsultation.first_name}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, first_name: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      first_name: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -867,7 +1068,10 @@ export default function ConsultationsPage() {
                   id="last_name"
                   value={editingConsultation.last_name}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, last_name: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      last_name: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -881,7 +1085,10 @@ export default function ConsultationsPage() {
                   type="email"
                   value={editingConsultation.email}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, email: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      email: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -894,7 +1101,10 @@ export default function ConsultationsPage() {
                   id="phone"
                   value={editingConsultation.phone}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, phone: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      phone: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -906,7 +1116,10 @@ export default function ConsultationsPage() {
                 <Select
                   value={editingConsultation.service_type}
                   onValueChange={(value) =>
-                    setEditingConsultation({ ...editingConsultation, service_type: value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      service_type: value,
+                    })
                   }
                 >
                   <SelectTrigger className="col-span-3">
@@ -914,7 +1127,9 @@ export default function ConsultationsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {Object.entries(serviceTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
+                      <SelectItem key={key} value={key}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -926,16 +1141,23 @@ export default function ConsultationsPage() {
                 <Select
                   value={editingConsultation.consultation_type}
                   onValueChange={(value) =>
-                    setEditingConsultation({ ...editingConsultation, consultation_type: value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      consultation_type: value,
+                    })
                   }
                 >
                   <SelectTrigger className="col-span-3">
                     <SelectValue placeholder="Select consultation type" />
                   </SelectTrigger>
                   <SelectContent>
-                    {Object.entries(consultationTypeLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>{label}</SelectItem>
-                    ))}
+                    {Object.entries(consultationTypeLabels).map(
+                      ([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
+                        </SelectItem>
+                      )
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -948,7 +1170,10 @@ export default function ConsultationsPage() {
                   type="date"
                   value={editingConsultation.preferred_date}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, preferred_date: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      preferred_date: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -962,7 +1187,10 @@ export default function ConsultationsPage() {
                   type="time"
                   value={editingConsultation.preferred_time}
                   onChange={(e) =>
-                    setEditingConsultation({ ...editingConsultation, preferred_time: e.target.value })
+                    setEditingConsultation({
+                      ...editingConsultation,
+                      preferred_time: e.target.value,
+                    })
                   }
                   className="col-span-3"
                 />
@@ -974,9 +1202,12 @@ export default function ConsultationsPage() {
                   </Label>
                   <Textarea
                     id="other_service_details"
-                    value={editingConsultation.other_service_details || ''}
+                    value={editingConsultation.other_service_details || ""}
                     onChange={(e) =>
-                      setEditingConsultation({ ...editingConsultation, other_service_details: e.target.value })
+                      setEditingConsultation({
+                        ...editingConsultation,
+                        other_service_details: e.target.value,
+                      })
                     }
                     className="col-span-3"
                   />
@@ -989,9 +1220,12 @@ export default function ConsultationsPage() {
                   </Label>
                   <Textarea
                     id="message"
-                    value={editingConsultation.message || ''}
+                    value={editingConsultation.message || ""}
                     onChange={(e) =>
-                      setEditingConsultation({ ...editingConsultation, message: e.target.value })
+                      setEditingConsultation({
+                        ...editingConsultation,
+                        message: e.target.value,
+                      })
                     }
                     className="col-span-3"
                   />
@@ -1017,19 +1251,30 @@ export default function ConsultationsPage() {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteConfirmDialog} onOpenChange={setShowDeleteConfirmDialog}>
+      <Dialog
+        open={showDeleteConfirmDialog}
+        onOpenChange={setShowDeleteConfirmDialog}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Are you absolutely sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the consultation record.
+              This action cannot be undone. This will permanently delete the
+              consultation record.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteConfirmDialog(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirmDialog(false)}
+            >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDeleteConsultation} disabled={isDeleting}>
+            <Button
+              variant="destructive"
+              onClick={confirmDeleteConsultation}
+              disabled={isDeleting}
+            >
               {isDeleting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
@@ -1042,5 +1287,5 @@ export default function ConsultationsPage() {
         </DialogContent>
       </Dialog>
     </SidebarProvider>
-  )
+  );
 }

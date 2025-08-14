@@ -1,17 +1,6 @@
 "use client"
 
-import {
-  ArrowRight,
-  CheckCircle,
-  Star,
-  Building2,
-  Globe,
-  CreditCard,
-  HeadphonesIcon,
-  FileText,
-  Users,
-  Clock,
-} from "lucide-react"
+import { ArrowRight, CheckCircle, Star, Building2, Globe, CreditCard, HeadphonesIcon, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -100,56 +89,46 @@ const visaDestinations = [
   },
 ]
 
-// Services data from navigation
-const servicesData = [
-  {
-    category: "Business Solution",
-    icon: Building2,
-    color: "from-emerald-500 to-teal-500",
-    services: [
-      { name: "Start-Up", href: "/services/business/startup" },
-      { name: "Amendment", href: "/services/business/amendment" },
-      { name: "Special License & Permit", href: "/services/business/license" },
-      { name: "Business Renewal", href: "/services/business/renewal" },
-      { name: "Business Closure", href: "/services/business/closure" },
-    ],
-  },
-  {
-    category: "Visa Services",
-    icon: Globe,
-    color: "from-blue-500 to-cyan-500",
-    services: [
-      { name: "Short Term Visa", href: "/services/visa/short-term" },
-      { name: "Long Term Visa", href: "/services/visa/long-term" },
-      { name: "International Visa", href: "/services/visa/international" },
-    ],
-  },
-  {
-    category: "Tax & Accounting",
-    icon: FileText,
-    color: "from-purple-500 to-indigo-500",
-    services: [
-      { name: "Tax Requirements", href: "/services/tax/requirements" },
-      { name: "Mandatory Taxes", href: "/services/tax/mandatory" },
-    ],
-  },
-  {
-    category: "HR Solutions",
-    icon: Users,
-    color: "from-orange-500 to-red-500",
-    services: [
-      { name: "HR Consulting", href: "/business-solution/hr-consulting" },
-      { name: "HR Outsourcing", href: "/business-solution/hr-outsourcing" },
-    ],
-  },
-]
-
 export default function HeroSection() {
   const [isVisible, setIsVisible] = useState(false)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isMobile, setIsMobile] = useState(false)
+
+  const visaSlides = isMobile
+    ? [
+        visaDestinations.slice(0, 6), // First 6 visas for mobile
+        visaDestinations.slice(6), // Remaining 5 visas for mobile
+      ]
+    : [
+        visaDestinations.slice(0, 9), // First 9 visas for desktop
+        visaDestinations.slice(9), // Remaining 2 visas for desktop
+      ]
 
   useEffect(() => {
     setIsVisible(true)
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024) // lg breakpoint
+    }
+
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+
+    return () => window.removeEventListener("resize", checkMobile)
   }, [])
+
+  // Added carousel navigation functions
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % visaSlides.length)
+  }
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + visaSlides.length) % visaSlides.length)
+  }
+
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index)
+  }
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 py-8 lg:py-12">
@@ -286,7 +265,7 @@ export default function HeroSection() {
                 Ready to get started? Schedule a free consultation with our experts.
               </p>
               <Link href="/consultation">
-                <Button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-8 py-3 text-base font-semibold transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
+                <Button className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-500 text-white px-8 py-3 text-base font-semibold transform hover:scale-105 transition-all duration-300 hover:shadow-lg">
                   Schedule A Consultation
                   <ArrowRight className="ml-2 h-4 w-4 animate-pulse" />
                 </Button>
@@ -294,88 +273,149 @@ export default function HeroSection() {
             </div>
           </div>
 
+          {/*  Conditional rendering: desktop grid vs mobile carousel */}
           <div
-            className={`grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3 gap-4 transition-all duration-1000 ${
+            className={`relative transition-all duration-1000 ${
               isVisible ? "translate-x-0 opacity-100" : "translate-x-10 opacity-0"
             }`}
             style={{ transitionDelay: "0.4s" }}
           >
-            {visaDestinations.map((visa, index) => (
-              <div key={visa.id} className="transform hover:scale-105 transition-all duration-500">
-                <Card className="shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col relative">
-                  {/* Enhanced badge with better hover interaction */}
-                  <Badge className="absolute top-2 right-2 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg animate-pulse hover:animate-none transition-all duration-300">
-                    <Clock className="h-3 w-3 mr-1" />
-                    {visa.badge}
-                  </Badge>
+            {/* Desktop: Show all visas in grid layout */}
+            {!isMobile ? (
+              <div className="grid grid-cols-3 gap-4">
+                {visaDestinations.map((visa) => (
+                  <div
+                    key={visa.id}
+                    className="transform hover:scale-105 transition-all duration-500 w-full max-w-none"
+                  >
+                    <Card className="shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col relative h-full">
+                      <Badge className="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg animate-pulse hover:animate-none transition-all duration-300">
+                        {visa.badge}
+                      </Badge>
 
-                  <Link href={`/services/visa/international/${visa.slug}`} passHref className="flex flex-col h-full">
-                    <div className="relative w-full h-[90px] overflow-hidden">
-                      <Image
-                        src={visa.imagePath || "/placeholder.svg"}
-                        alt={visa.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw"
-                        style={{ objectFit: "cover" }}
-                        className="transition-transform duration-300 group-hover:scale-110"
-                      />
-                    </div>
-                    <CardContent className="px-3 py-2 text-center flex items-center justify-center h-[40px]">
-                      <h3 className="font-bold text-sm text-gray-900 line-clamp-2">{visa.name}</h3>
-                    </CardContent>
-                  </Link>
-                </Card>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div
-          className={`transition-all duration-1000 ${
-            isVisible ? "translate-y-0 opacity-100" : "translate-y-5 opacity-0"
-          }`}
-          style={{ transitionDelay: "1s" }}
-        >
-          <div className="text-center mb-8">
-            <h3 className="text-3xl font-bold text-gray-900 mb-2">Our Services</h3>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Click on any service to learn more about how we can help your business succeed
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-            {servicesData.map((category, categoryIndex) => {
-              const Icon = category.icon
-              return (
-                <div
-                  key={category.category}
-                  className="bg-white/40 backdrop-blur-sm rounded-xl p-6 border border-white/30 hover:bg-white/50 transition-all duration-300 hover:shadow-lg group"
-                >
-                  <div className="flex items-center mb-4">
-                    <div
-                      className={`p-3 rounded-xl bg-gradient-to-r ${category.color} mr-4 flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}
-                    >
-                      <Icon className="h-6 w-6 text-white" />
-                    </div>
-                    <h4 className="font-bold text-xl text-gray-900">{category.category}</h4>
-                  </div>
-
-                  <div className="flex flex-wrap gap-2">
-                    {category.services.map((service, serviceIndex) => (
-                      <Link key={service.name} href={service.href}>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-9 px-4 text-sm font-medium text-gray-700 hover:text-white hover:bg-gradient-to-r hover:from-green-500 hover:to-blue-500 transition-all duration-300 rounded-lg border border-gray-200 hover:border-transparent bg-white/80 hover:shadow-md hover:scale-105"
-                        >
-                          <span className="whitespace-nowrap">{service.name}</span>
-                        </Button>
+                      <Link
+                        href={`/services/visa/international/${visa.slug}`}
+                        passHref
+                        className="flex flex-col h-full"
+                      >
+                        <div className="relative w-full h-[120px] overflow-hidden">
+                          <Image
+                            src={visa.imagePath || "/placeholder.svg"}
+                            alt={visa.name}
+                            fill
+                            sizes="(max-width: 768px) 33vw, (max-width: 1024px) 33vw, 33vw"
+                            style={{ objectFit: "cover" }}
+                            className="transition-transform duration-300 group-hover:scale-110"
+                          />
+                        </div>
+                        <CardContent className="px-4 py-3 text-center flex items-center justify-center h-[50px]">
+                          <h3 className="font-bold text-sm text-gray-900 line-clamp-2">{visa.name}</h3>
+                        </CardContent>
                       </Link>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Mobile: Keep existing carousel */
+              <>
+                {/* Carousel container */}
+                <div className="relative overflow-hidden rounded-xl">
+                  <div
+                    className="flex transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+                  >
+                    {visaSlides.map((slideVisas, slideIndex) => (
+                      <div key={slideIndex} className="w-full flex-shrink-0">
+                        <div
+                          className={`grid gap-4 ${
+                            slideIndex === 1
+                              ? "grid-cols-2 justify-items-center max-h-[120px] sm:max-h-[200px]"
+                              : "grid-cols-2 lg:grid-cols-3"
+                          }`}
+                          style={{
+                            minHeight: slideIndex === 1 ? "auto" : undefined,
+                          }}
+                        >
+                          {slideVisas.map((visa, index) => (
+                            <div
+                              key={visa.id}
+                              className="transform hover:scale-105 transition-all duration-500 w-full max-w-none"
+                            >
+                              <Card className="shadow-lg hover:shadow-2xl bg-white rounded-xl overflow-hidden border border-gray-200 p-0 flex flex-col relative h-full">
+                                <Badge className="absolute top-3 right-3 z-10 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full shadow-lg animate-pulse hover:animate-none transition-all duration-300">
+                                  {visa.badge}
+                                </Badge>
+
+                                <Link
+                                  href={`/services/visa/international/${visa.slug}`}
+                                  passHref
+                                  className="flex flex-col h-full"
+                                >
+                                  <div className="relative w-full h-[120px] overflow-hidden">
+                                    <Image
+                                      src={visa.imagePath || "/placeholder.svg"}
+                                      alt={visa.name}
+                                      fill
+                                      sizes="(max-width: 768px) 33vw, (max-width: 1024px) 33vw, 33vw"
+                                      style={{ objectFit: "cover" }}
+                                      className="transition-transform duration-300 group-hover:scale-110"
+                                    />
+                                  </div>
+                                  <CardContent className="px-4 py-3 text-center flex items-center justify-center h-[50px]">
+                                    <h3 className="font-bold text-sm text-gray-900 line-clamp-2">{visa.name}</h3>
+                                  </CardContent>
+                                </Link>
+                              </Card>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>
-              )
-            })}
+
+                <div className="flex items-center justify-between mt-4">
+                  {/* Navigation arrows */}
+                  <div className="flex gap-2">
+                    <button
+                      onClick={prevSlide}
+                      className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={currentSlide === 0}
+                    >
+                      <ChevronLeft className="h-5 w-5 text-gray-600" />
+                    </button>
+                    <button
+                      onClick={nextSlide}
+                      className="p-2 rounded-full bg-white/80 hover:bg-white shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={currentSlide === visaSlides.length - 1}
+                    >
+                      <ChevronRight className="h-5 w-5 text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Slide indicators */}
+                  <div className="flex gap-2">
+                    {visaSlides.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => goToSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                          currentSlide === index
+                            ? "bg-gradient-to-r from-green-500 to-blue-500 scale-110"
+                            : "bg-gray-300 hover:bg-gray-400"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Slide counter */}
+                  <div className="text-sm text-gray-600 font-medium">
+                    {currentSlide + 1} / {visaSlides.length}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

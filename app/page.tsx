@@ -13,8 +13,9 @@ export default function HomePage() {
     <main className="min-h-screen">
       <Navigation />
       <HeroSection />
+         <ServicesOverview />
       <TestimonialsSection />
-      {/* <ServicesOverview /> */}
+   
       <WhyChooseUs />
       <CTASection />
       <FaqSection />

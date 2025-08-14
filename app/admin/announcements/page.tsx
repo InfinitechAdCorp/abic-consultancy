@@ -1,23 +1,56 @@
-'use client'
+"use client"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import type React from "react"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Eye, Plus, Search, Loader2, RefreshCw, ArrowUpDown, Edit, Trash2, X, CalendarIcon } from 'lucide-react'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog"
+import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Trash2, CalendarIcon } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { useState, useEffect, useCallback, ChangeEvent, FormEvent } from "react"
-import { useRouter } from 'next/navigation'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { useState, useEffect, type FormEvent } from "react"
+import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 import { DataTable } from "@/components/ui/data-table"
-import { ColumnDef, ColumnFiltersState, RowSelectionState, useReactTable, getCoreRowModel, getFilteredRowModel, getSortedRowModel } from "@tanstack/react-table"
+import {
+  type ColumnDef,
+  type ColumnFiltersState,
+  type RowSelectionState,
+  useReactTable,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+} from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
@@ -26,12 +59,12 @@ import { format } from "date-fns"
 
 // Announcement data type - aligned with Laravel backend
 interface Announcement {
-  id: number;
-  title: string;
-  content: string;
-  date: string;
-  created_at: string;
-  updated_at: string;
+  id: number
+  title: string
+  content: string
+  date: string
+  created_at: string
+  updated_at: string
 }
 
 export default function AnnouncementsAdminPage() {
@@ -44,7 +77,7 @@ export default function AnnouncementsAdminPage() {
   // DataTable states
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
-  const [globalFilter, setGlobalFilter] = useState('')
+  const [globalFilter, setGlobalFilter] = useState("")
 
   // State for mobile detection
   const [isMobile, setIsMobile] = useState(false)
@@ -53,82 +86,111 @@ export default function AnnouncementsAdminPage() {
       setIsMobile(window.innerWidth < 768)
     }
     checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
   }, [])
 
   // Add new state variables for the create announcement modal:
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [newFormData, setNewFormData] = useState({
-    title: '',
-    content: '',
+    title: "",
+    content: "",
     date: new Date(), // Initialize date for new announcement
-  });
-  const [isCreating, setIsCreating] = useState(false);
+  })
+  const [isCreating, setIsCreating] = useState(false)
+
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   // Add handler functions for the new announcement form:
   const handleNewFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNewFormData(prev => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setNewFormData((prev) => ({ ...prev, [name]: value }))
+  }
 
   const handleCreateSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setIsCreating(true);
+    e.preventDefault()
+    setIsCreating(true)
     const data = {
       title: newFormData.title,
       content: newFormData.content,
-      date: format(newFormData.date, 'yyyy-MM-dd'), // Format date for backend
-    };
+      date: format(newFormData.date, "yyyy-MM-dd"), // Format date for backend
+    }
 
     try {
-      const response = await fetch('/api/announcements', {
-        method: 'POST',
+      const response = await fetch("/api/announcements", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      });
-      const result = await response.json();
+      })
+      const result = await response.json()
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create announcement.');
+        throw new Error(result.message || "Failed to create announcement.")
       }
       toast({
         title: "Success",
-        description: "Announcement created successfully!"
-      });
-      setIsCreateModalOpen(false); // Close modal
-      setNewFormData({ title: '', content: '', date: new Date() }); // Reset form
-      fetchAnnouncements(); // Refresh the list
+        description: "Announcement created successfully!",
+      })
+      setIsCreateModalOpen(false) // Close modal
+      setNewFormData({ title: "", content: "", date: new Date() }) // Reset form
+      fetchAnnouncements() // Refresh the list
     } catch (error: any) {
-      console.error('Error creating announcement:', error);
+      console.error("Error creating announcement:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "There was an error creating the announcement."
-      });
+        description: error.message || "There was an error creating the announcement.",
+      })
     } finally {
-      setIsCreating(false);
+      setIsCreating(false)
     }
-  };
+  }
+
+  const handleDelete = async (id: number) => {
+    setDeletingId(id)
+    try {
+      const response = await fetch(`/api/announcements/${id}`, {
+        method: "DELETE",
+      })
+      const result = await response.json()
+      if (!response.ok) {
+        throw new Error(result.message || "Failed to delete announcement.")
+      }
+      toast({
+        title: "Success",
+        description: "Announcement deleted successfully!",
+      })
+      fetchAnnouncements() // Refresh the list
+    } catch (error: any) {
+      console.error("Error deleting announcement:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "There was an error deleting the announcement.",
+      })
+    } finally {
+      setDeletingId(null)
+    }
+  }
 
   // Fetch Announcements
   const fetchAnnouncements = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/announcements')
+      const response = await fetch("/api/announcements")
       const result = await response.json()
       if (response.ok) {
         setAnnouncements(result)
       } else {
-        throw new Error(result.message || 'Failed to fetch announcements');
+        throw new Error(result.message || "Failed to fetch announcements")
       }
     } catch (error) {
-      console.error('Failed to fetch announcements:', error)
+      console.error("Failed to fetch announcements:", error)
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load announcements"
+        description: "Failed to load announcements",
       })
     } finally {
       setLoading(false)
@@ -145,10 +207,7 @@ export default function AnnouncementsAdminPage() {
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected() ||
-            (table.getIsSomePageRowsSelected() && "indeterminate")
-          }
+          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
@@ -166,32 +225,23 @@ export default function AnnouncementsAdminPage() {
     {
       accessorKey: "title",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Announcement Title
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => (
-        <div className="font-semibold text-gray-900">
-          {row.original.title}
-        </div>
-      ),
+      cell: ({ row }) => <div className="font-semibold text-gray-900">{row.original.title}</div>,
     },
     {
       accessorKey: "date", // Column for date
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Announcement Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => new Date(row.original.date).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+      cell: ({ row }) =>
+        new Date(row.original.date).toLocaleDateString("en-US", { month: "long", day: "2-digit", year: "numeric" }),
     },
     {
       accessorKey: "content",
@@ -201,21 +251,23 @@ export default function AnnouncementsAdminPage() {
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
+        <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
           Created Date
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' }),
+      cell: ({ row }) =>
+        new Date(row.original.created_at).toLocaleDateString("en-US", {
+          month: "long",
+          day: "2-digit",
+          year: "numeric",
+        }),
     },
     {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const announcement = row.original;
+        const announcement = row.original
         return (
           <div className="flex items-center gap-2">
             <Sheet>
@@ -230,9 +282,7 @@ export default function AnnouncementsAdminPage() {
                 {selectedAnnouncement && (
                   <SheetHeader>
                     <SheetTitle>Announcement Details</SheetTitle>
-                    <SheetDescription>
-                      Complete information for this announcement
-                    </SheetDescription>
+                    <SheetDescription>Complete information for this announcement</SheetDescription>
                     <div className="mt-6 space-y-6">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-4">
@@ -242,17 +292,35 @@ export default function AnnouncementsAdminPage() {
                           </div>
                           <div>
                             <Label className="text-sm font-medium text-gray-500">Announcement Date</Label>
-                            <p className="text-lg">{new Date(selectedAnnouncement.date).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}</p>
+                            <p className="text-lg">
+                              {new Date(selectedAnnouncement.date).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "2-digit",
+                                year: "numeric",
+                              })}
+                            </p>
                           </div>
                         </div>
                         <div className="space-y-4">
                           <div>
                             <Label className="text-sm font-medium text-gray-500">Created On</Label>
-                            <p className="text-sm">{new Date(selectedAnnouncement.created_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}</p>
+                            <p className="text-sm">
+                              {new Date(selectedAnnouncement.created_at).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "2-digit",
+                                year: "numeric",
+                              })}
+                            </p>
                           </div>
                           <div>
                             <Label className="text-sm font-medium text-gray-500">Last Updated</Label>
-                            <p className="text-sm">{new Date(selectedAnnouncement.updated_at).toLocaleDateString('en-US', { month: 'long', day: '2-digit', year: 'numeric' })}</p>
+                            <p className="text-sm">
+                              {new Date(selectedAnnouncement.updated_at).toLocaleDateString("en-US", {
+                                month: "long",
+                                day: "2-digit",
+                                year: "numeric",
+                              })}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -261,7 +329,7 @@ export default function AnnouncementsAdminPage() {
                         {/* FIX: Use dangerouslySetInnerHTML to render newlines as <br /> tags */}
                         <p
                           className="text-sm mt-1 p-3 bg-gray-50 rounded-md whitespace-pre-wrap" // Added whitespace-pre-wrap for better rendering
-                          dangerouslySetInnerHTML={{ __html: selectedAnnouncement.content.replace(/\n/g, '<br />') }}
+                          dangerouslySetInnerHTML={{ __html: selectedAnnouncement.content.replace(/\n/g, "<br />") }}
                         />
                       </div>
                     </div>
@@ -280,14 +348,47 @@ export default function AnnouncementsAdminPage() {
                 <DropdownMenuItem onClick={() => router.push(`/admin/announcements/${announcement.id}`)}>
                   <Edit className="mr-2 h-4 w-4" /> Edit Announcement
                 </DropdownMenuItem>
-                {/* Delete is handled on the details page now */}
+                <DropdownMenuSeparator />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Trash2 className="text-red-600 focus:text-red-600" /> Delete Announcement
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete the announcement "
+                        {announcement.title}" and remove it from the system.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(announcement.id)}
+                        disabled={deletingId === announcement.id}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {deletingId === announcement.id ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          "Delete Announcement"
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-        );
+        )
       },
     },
-  ];
+  ]
 
   // Initialize table instance
   const table = useReactTable({
@@ -304,7 +405,7 @@ export default function AnnouncementsAdminPage() {
     onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
     onRowSelectionChange: setRowSelection,
-  });
+  })
 
   if (loading) {
     return (
@@ -324,7 +425,7 @@ export default function AnnouncementsAdminPage() {
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <div className={`flex-1 min-w-0 ${isMobile ? 'ml-0' : 'ml-72'}`}>
+        <div className={`flex-1 min-w-0 ${isMobile ? "ml-0" : "ml-72"}`}>
           {isMobile && (
             <div className="sticky top-0 z-50 flex h-12 items-center gap-2 border-b bg-background px-4 md:hidden">
               <SidebarTrigger className="-ml-1" />
@@ -341,8 +442,8 @@ export default function AnnouncementsAdminPage() {
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
                       <Input
                         placeholder="Search announcements..."
-                        value={globalFilter || ''}
-                        onChange={event => setGlobalFilter(event.target.value)}
+                        value={globalFilter || ""}
+                        onChange={(event) => setGlobalFilter(event.target.value)}
                         className="pl-9 pr-3 py-2 w-full"
                       />
                     </div>
@@ -357,18 +458,31 @@ export default function AnnouncementsAdminPage() {
                       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Create New Announcement</DialogTitle>
-                          <DialogDescription>
-                            Fill in the details for your new announcement.
-                          </DialogDescription>
+                          <DialogDescription>Fill in the details for your new announcement.</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
                           <div>
                             <Label htmlFor="newTitle">Announcement Title</Label>
-                            <Input id="newTitle" name="title" value={newFormData.title} onChange={handleNewFormChange} required disabled={isCreating} />
+                            <Input
+                              id="newTitle"
+                              name="title"
+                              value={newFormData.title}
+                              onChange={handleNewFormChange}
+                              required
+                              disabled={isCreating}
+                            />
                           </div>
                           <div>
                             <Label htmlFor="newContent">Content</Label>
-                            <Textarea id="newContent" name="content" value={newFormData.content} onChange={handleNewFormChange} required rows={5} disabled={isCreating} />
+                            <Textarea
+                              id="newContent"
+                              name="content"
+                              value={newFormData.content}
+                              onChange={handleNewFormChange}
+                              required
+                              rows={5}
+                              disabled={isCreating}
+                            />
                           </div>
                           <div>
                             <Label htmlFor="newDate">Announcement Date</Label>
@@ -378,7 +492,7 @@ export default function AnnouncementsAdminPage() {
                                   variant={"outline"}
                                   className={cn(
                                     "w-full justify-start text-left font-normal",
-                                    !newFormData.date && "text-muted-foreground"
+                                    !newFormData.date && "text-muted-foreground",
                                   )}
                                   disabled={isCreating}
                                 >
@@ -392,7 +506,7 @@ export default function AnnouncementsAdminPage() {
                                   selected={newFormData.date}
                                   onSelect={(date: any) => {
                                     if (date) {
-                                      setNewFormData(prev => ({ ...prev, date }));
+                                      setNewFormData((prev) => ({ ...prev, date }))
                                     }
                                   }}
                                   initialFocus
@@ -401,7 +515,12 @@ export default function AnnouncementsAdminPage() {
                             </Popover>
                           </div>
                           <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setIsCreateModalOpen(false)} disabled={isCreating}>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsCreateModalOpen(false)}
+                              disabled={isCreating}
+                            >
                               Cancel
                             </Button>
                             <Button type="submit" disabled={isCreating}>
@@ -428,7 +547,7 @@ export default function AnnouncementsAdminPage() {
                       columns={columns}
                       data={announcements}
                       globalSearchPlaceholder="Search announcements..."
-                      getRowClassName={() => ''}
+                      getRowClassName={() => ""}
                       columnFilters={columnFilters}
                       onColumnFiltersChange={setColumnFilters}
                       globalFilter={globalFilter}

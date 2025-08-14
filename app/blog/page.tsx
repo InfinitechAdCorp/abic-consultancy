@@ -164,7 +164,7 @@ export default function BlogPage() {
                               alt={featuredPost.title}
                               width={600}
                               height={400}
-                              className="w-full h-64 md:h-full object-cover"
+                              className="w-full h-64 md:h-full object-cover object-center"
                             />
                           ) : (
                             <div className="w-full h-64 md:h-full bg-gradient-to-br from-teal-100 to-green-100 flex items-center justify-center">
@@ -221,7 +221,7 @@ export default function BlogPage() {
                             alt={blog.title}
                             width={400}
                             height={250}
-                            className="w-full h-48 object-cover"
+                            className="w-full h-48 object-cover object-center"
                           />
                         ) : (
                           <div className="w-full h-48 bg-gradient-to-br from-teal-100 to-green-100 flex items-center justify-center">

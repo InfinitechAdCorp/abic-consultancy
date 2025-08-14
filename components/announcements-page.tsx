@@ -17,7 +17,6 @@ interface Announcement {
 
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false)
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null)
@@ -27,7 +26,6 @@ export default function AnnouncementsPage() {
   }, [])
 
   const fetchAnnouncements = async () => {
-    setLoading(true)
     setError(null)
     try {
       const response = await fetch("/api/announcements")
@@ -38,8 +36,6 @@ export default function AnnouncementsPage() {
       setAnnouncements(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()))
     } catch (err: any) {
       setError(err.message)
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -54,14 +50,6 @@ export default function AnnouncementsPage() {
     console.log("Closing modal.")
     setShowAnnouncementModal(false)
     setSelectedAnnouncement(null)
-  }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen flex items-center justify-center">
-        <p className="text-xl text-gray-700">Loading announcements...</p>
-      </main>
-    )
   }
 
   if (error) {

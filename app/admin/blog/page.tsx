@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Video, ImageIcon } from "lucide-react"
+import { MoreHorizontal, Eye, Plus, Search, Loader2, ArrowUpDown, Edit, Video, ImageIcon, Trash2 } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +27,16 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { useState, useEffect, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
@@ -42,6 +52,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Progress } from "@/components/ui/progress"
 
 // Blog data type - aligned with Laravel backend
 interface Blog {
@@ -54,6 +65,66 @@ interface Blog {
   published_at?: string | null
   created_at: string
   updated_at: string
+}
+
+const CHUNK_SIZE = 2 * 1024 * 1024 // 2MB chunks
+const MAX_FILE_SIZE_FOR_REGULAR_UPLOAD = 4 * 1024 * 1024 // 4MB
+
+const uploadVideoInChunks = async (file: File, onProgress?: (progress: number) => void): Promise<string> => {
+  const totalChunks = Math.ceil(file.size / CHUNK_SIZE)
+
+  // Initialize chunked upload
+  const initResponse = await fetch("/api/blog/chunked-upload/init", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      filesize: file.size,
+      total_chunks: totalChunks,
+    }),
+  })
+
+  if (!initResponse.ok) {
+    throw new Error("Failed to initialize chunked upload")
+  }
+
+  const { upload_id } = await initResponse.json()
+
+  // Upload chunks
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * CHUNK_SIZE
+    const end = Math.min(start + CHUNK_SIZE, file.size)
+    const chunk = file.slice(start, end)
+
+    const chunkFormData = new FormData()
+    chunkFormData.append("chunk", chunk)
+    chunkFormData.append("chunk_number", i.toString())
+
+    const chunkResponse = await fetch(`/api/blog/chunked-upload/${upload_id}/chunk`, {
+      method: "POST",
+      body: chunkFormData,
+    })
+
+    if (!chunkResponse.ok) {
+      throw new Error(`Failed to upload chunk ${i + 1}`)
+    }
+
+    // Update progress
+    if (onProgress) {
+      onProgress(Math.round(((i + 1) / totalChunks) * 100))
+    }
+  }
+
+  // Complete upload
+  const completeResponse = await fetch(`/api/blog/chunked-upload/${upload_id}/complete`, {
+    method: "POST",
+  })
+
+  if (!completeResponse.ok) {
+    throw new Error("Failed to complete chunked upload")
+  }
+
+  return upload_id
 }
 
 export default function BlogAdminPage() {
@@ -89,6 +160,8 @@ export default function BlogAdminPage() {
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [videoFile, setVideoFile] = useState<File | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [isChunkedUpload, setIsChunkedUpload] = useState(false)
 
   // Add state variables for the edit blog modal:
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
@@ -101,6 +174,12 @@ export default function BlogAdminPage() {
   const [editThumbnailFile, setEditThumbnailFile] = useState<File | null>(null)
   const [editVideoFile, setEditVideoFile] = useState<File | null>(null)
   const [isUpdating, setIsUpdating] = useState(false)
+  const [editUploadProgress, setEditUploadProgress] = useState(0)
+  const [isEditChunkedUpload, setIsEditChunkedUpload] = useState(false)
+
+  // Add state for delete confirmation dialog
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [blogToDelete, setBlogToDelete] = useState<{ id: number; title: string } | null>(null)
 
   // Add handler functions for the new blog form:
   const handleNewFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -119,26 +198,37 @@ export default function BlogAdminPage() {
     const file = e.target.files?.[0]
     if (file) {
       setVideoFile(file)
+      setIsChunkedUpload(file.size > MAX_FILE_SIZE_FOR_REGULAR_UPLOAD)
     }
   }
 
   const handleCreateSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setIsCreating(true)
-
-    const formData = new FormData()
-    formData.append("title", newFormData.title)
-    formData.append("content", newFormData.content)
-    formData.append("status", newFormData.status)
-
-    if (thumbnailFile) {
-      formData.append("thumbnail", thumbnailFile)
-    }
-    if (videoFile) {
-      formData.append("video", videoFile)
-    }
+    setUploadProgress(0)
 
     try {
+      let chunkedVideoId = null
+
+      if (videoFile && isChunkedUpload) {
+        chunkedVideoId = await uploadVideoInChunks(videoFile, setUploadProgress)
+      }
+
+      const formData = new FormData()
+      formData.append("title", newFormData.title)
+      formData.append("content", newFormData.content)
+      formData.append("status", newFormData.status)
+
+      if (thumbnailFile) {
+        formData.append("thumbnail", thumbnailFile)
+      }
+
+      if (videoFile && !isChunkedUpload) {
+        formData.append("video", videoFile)
+      } else if (chunkedVideoId) {
+        formData.append("chunked_video_id", chunkedVideoId)
+      }
+
       const response = await fetch("/api/blog", {
         method: "POST",
         body: formData,
@@ -155,6 +245,8 @@ export default function BlogAdminPage() {
       setNewFormData({ title: "", content: "", status: "draft" })
       setThumbnailFile(null)
       setVideoFile(null)
+      setIsChunkedUpload(false)
+      setUploadProgress(0)
       fetchBlogs()
     } catch (error: any) {
       console.error("Error creating blog post:", error)
@@ -182,6 +274,9 @@ export default function BlogAdminPage() {
   const handleEditVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null
     setEditVideoFile(file)
+    if (file) {
+      setIsEditChunkedUpload(file.size > MAX_FILE_SIZE_FOR_REGULAR_UPLOAD)
+    }
   }
 
   const openEditModal = (blog: Blog) => {
@@ -193,6 +288,8 @@ export default function BlogAdminPage() {
     })
     setEditThumbnailFile(null)
     setEditVideoFile(null)
+    setIsEditChunkedUpload(false)
+    setEditUploadProgress(0)
     setIsEditModalOpen(true)
   }
 
@@ -201,7 +298,15 @@ export default function BlogAdminPage() {
     if (!editingBlog) return
 
     setIsUpdating(true)
+    setEditUploadProgress(0)
+
     try {
+      let chunkedVideoId = null
+
+      if (editVideoFile && isEditChunkedUpload) {
+        chunkedVideoId = await uploadVideoInChunks(editVideoFile, setEditUploadProgress)
+      }
+
       const formData = new FormData()
       formData.append("title", editFormData.title)
       formData.append("content", editFormData.content)
@@ -210,8 +315,11 @@ export default function BlogAdminPage() {
       if (editThumbnailFile) {
         formData.append("thumbnail", editThumbnailFile)
       }
-      if (editVideoFile) {
+
+      if (editVideoFile && !isEditChunkedUpload) {
         formData.append("video", editVideoFile)
+      } else if (chunkedVideoId) {
+        formData.append("chunked_video_id", chunkedVideoId)
       }
 
       console.log("Sending update for blog ID:", editingBlog.id)
@@ -241,6 +349,8 @@ export default function BlogAdminPage() {
 
       setIsEditModalOpen(false)
       setEditingBlog(null)
+      setIsEditChunkedUpload(false)
+      setEditUploadProgress(0)
       setTimeout(() => {
         fetchBlogs()
       }, 100)
@@ -282,6 +392,44 @@ export default function BlogAdminPage() {
   useEffect(() => {
     fetchBlogs()
   }, [])
+
+  const handleDeleteBlog = async () => {
+    if (!blogToDelete) return
+
+    try {
+      const response = await fetch(`/api/blogs/${blogToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to delete blog post")
+      }
+
+      toast({
+        title: "Success",
+        description: "Blog post deleted successfully!",
+      })
+
+      // Refresh the blog list
+      fetchBlogs()
+    } catch (error) {
+      console.error("Error deleting blog post:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete blog post. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleteDialogOpen(false)
+      setBlogToDelete(null)
+    }
+  }
+
+  const openDeleteDialog = (blogId: number, blogTitle: string) => {
+    setBlogToDelete({ id: blogId, title: blogTitle })
+    setDeleteDialogOpen(true)
+  }
 
   // Define columns for DataTable
   const columns: ColumnDef<Blog>[] = [
@@ -446,6 +594,12 @@ export default function BlogAdminPage() {
                 <DropdownMenuItem onClick={() => openEditModal(blog)}>
                   <Edit className="mr-2 h-4 w-4" /> Edit Blog Post
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => openDeleteDialog(blog.id, blog.title)}
+                  className="text-red-600 focus:text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" /> Delete Blog Post
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -598,9 +752,23 @@ export default function BlogAdminPage() {
                                 className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-gray-100"
                               />
                               <Video className="h-4 w-4 text-gray-400" />
-                              {videoFile && <p className="text-xs text-gray-500 mt-1">{videoFile.name}</p>}
+                              {videoFile && (
+                                <div className="mt-1">
+                                  <p className="text-xs text-gray-500">{videoFile.name}</p>
+                                  {isChunkedUpload && (
+                                    <p className="text-xs text-blue-600">Large file - will use chunked upload</p>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
+                          {isCreating && isChunkedUpload && uploadProgress > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-sm">Upload Progress</Label>
+                              <Progress value={uploadProgress} className="w-full" />
+                              <p className="text-xs text-gray-500">{uploadProgress}% uploaded</p>
+                            </div>
+                          )}
                           <DialogFooter>
                             <Button
                               type="button"
@@ -613,7 +781,10 @@ export default function BlogAdminPage() {
                             <Button type="submit" disabled={isCreating}>
                               {isCreating ? (
                                 <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Blog Post...
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  {isChunkedUpload && uploadProgress > 0
+                                    ? `Uploading... ${uploadProgress}%`
+                                    : "Creating Blog Post..."}
                                 </>
                               ) : (
                                 "Create Blog Post"
@@ -705,7 +876,14 @@ export default function BlogAdminPage() {
                                 className="file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:bg-gray-100"
                               />
                               <Video className="h-4 w-4 text-gray-400" />
-                              {editVideoFile && <p className="text-xs text-gray-500 mt-1">{editVideoFile.name}</p>}
+                              {editVideoFile && (
+                                <div className="mt-1">
+                                  <p className="text-xs text-gray-500">{editVideoFile.name}</p>
+                                  {isEditChunkedUpload && (
+                                    <p className="text-xs text-blue-600">Large file - will use chunked upload</p>
+                                  )}
+                                </div>
+                              )}
                               {editingBlog?.video_path && !editVideoFile && (
                                 <p className="text-xs text-gray-500 mt-1">
                                   Current: {editingBlog.video_path.split("/").pop()}
@@ -713,6 +891,13 @@ export default function BlogAdminPage() {
                               )}
                             </div>
                           </div>
+                          {isUpdating && isEditChunkedUpload && editUploadProgress > 0 && (
+                            <div className="space-y-2">
+                              <Label className="text-sm">Upload Progress</Label>
+                              <Progress value={editUploadProgress} className="w-full" />
+                              <p className="text-xs text-gray-500">{editUploadProgress}% uploaded</p>
+                            </div>
+                          )}
                           <DialogFooter>
                             <Button
                               type="button"
@@ -725,7 +910,10 @@ export default function BlogAdminPage() {
                             <Button type="submit" disabled={isUpdating}>
                               {isUpdating ? (
                                 <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Updating Blog Post...
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                  {isEditChunkedUpload && editUploadProgress > 0
+                                    ? `Uploading... ${editUploadProgress}%`
+                                    : "Updating Blog Post..."}
                                 </>
                               ) : (
                                 "Update Blog Post"
@@ -759,6 +947,22 @@ export default function BlogAdminPage() {
           </main>
         </div>
       </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the blog post "{blogToDelete?.title}". This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setBlogToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteBlog} className="bg-red-600 hover:bg-red-700 focus:ring-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </SidebarProvider>
   )
 }

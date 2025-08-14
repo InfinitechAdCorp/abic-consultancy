@@ -3,29 +3,18 @@
 import {
   Home,
   Building2,
-  FileText,
-  Award,
-  RotateCcw,
-  XCircle,
-  Plane,
-  Clock,
-  Globe,
-  Calculator,
-  Receipt,
-  TrendingUp,
   HelpCircle,
   LogOut,
   MessageSquare,
   Star,
   Calendar,
   Megaphone,
-  ChevronDown,
   Loader2,
   Headset,
   BookOpen,
-  QuoteIcon ,
-
+  QuoteIcon,
 } from "lucide-react"
+
 import {
   Sidebar,
   SidebarContent,
@@ -42,79 +31,78 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useState } from "react"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { useAuth } from "@/components/auth-provider" // Import useAuth
 
 // Business Solution items
-const businessSolutionItems = [
-  {
-    title: "Start-Up",
-    url: "/admin/business-services/startup",
-    icon: Building2,
-    badge: "New",
-  },
-  {
-    title: "Amendment",
-    url: "/admin/business-services/amendment",
-    icon: FileText,
-  },
-  {
-    title: "Special License & Permit",
-    url: "/admin/business-services/license-permit",
-    icon: Award,
-    badge: "3",
-  },
-  {
-    title: "Business Renewal",
-    url: "/admin/business-services/renewal",
-    icon: RotateCcw,
-  },
-  {
-    title: "Business Closure",
-    url: "/admin/business-services/closure",
-    icon: XCircle,
-  },
-]
+// const businessSolutionItems = [
+//   {
+//     title: "Start-Up",
+//     url: "/admin/business-services/startup",
+//     icon: Building2,
+//     badge: "New",
+//   },
+//   {
+//     title: "Amendment",
+//     url: "/admin/business-services/amendment",
+//     icon: FileText,
+//   },
+//   {
+//     title: "Special License & Permit",
+//     url: "/admin/business-services/license-permit",
+//     icon: Award,
+//     badge: "3",
+//   },
+//   {
+//     title: "Business Renewal",
+//     url: "/admin/business-services/renewal",
+//     icon: RotateCcw,
+//   },
+//   {
+//     title: "Business Closure",
+//     url: "/admin/business-services/closure",
+//     icon: XCircle,
+//   },
+// ]
 
 // Visa service items
-const visaServiceItems = [
-  {
-    title: "Short Term Visa",
-    url: "/admin/visa-services/short-term",
-    icon: Clock,
-  },
-  {
-    title: "Long Term Visa",
-    url: "/admin/visa-services/long-term",
-    icon: Plane,
-    badge: "Popular",
-  },
-  {
-    title: "International Visa",
-    url: "/admin/visa-services/international",
-    icon: Globe,
-  },
-]
+// const visaServiceItems = [
+//   {
+//     title: "Short Term Visa",
+//     url: "/admin/visa-services/short-term",
+//     icon: Clock,
+//   },
+//   {
+//     title: "Long Term Visa",
+//     url: "/admin/visa-services/long-term",
+//     icon: Plane,
+//     badge: "Popular",
+//   },
+//   {
+//     title: "International Visa",
+//     url: "/admin/visa-services/international",
+//     icon: Globe,
+//   },
+// ]
 
 // Tax & Accounting items
-const taxAccountingItems = [
-  {
-    title: "Tax Requirements",
-    url: "/admin/tax-accounting/requirements",
-    icon: Receipt,
-  },
-  {
-    title: "Mandatory Taxes",
-    url: "/admin/tax-accounting/mandatory",
-    icon: Calculator,
-    badge: "Due",
-  },
-  {
-    title: "Payroll Services",
-    url: "/admin/tax-accounting/payroll",
-    icon: TrendingUp,
-  },
-]
+// const taxAccountingItems = [
+//   {
+//     title: "Tax Requirements",
+//     url: "/admin/tax-accounting/requirements",
+//     icon: Receipt,
+//   },
+//   {
+//     title: "Mandatory Taxes",
+//     url: "/admin/tax-accounting/mandatory",
+//     icon: Calculator,
+//     badge: "Due",
+//   },
+//   {
+//     title: "Payroll Services",
+//     url: "/admin/tax-accounting/payroll",
+//     icon: TrendingUp,
+//   },
+// ]
 
 // System items
 const systemItems = [
@@ -133,17 +121,22 @@ const systemItems = [
     url: "/admin/blog",
     icon: BookOpen,
   },
-   {
+  {
     title: "Chat Support",
     url: "/admin/chat",
     icon: Headset,
   },
   {
-    title: "Consultations",
+    title: "HR Outsourcing",
     url: "/admin/consultations",
     icon: MessageSquare,
   },
    {
+    title: "HR Consultation",
+    url: "/admin/hr-consultation",
+    icon: MessageSquare,
+   },
+  {
     title: "Events",
     url: "/admin/events",
     icon: Calendar,
@@ -159,7 +152,7 @@ const systemItems = [
     icon: Star,
   },
   {
-    title: "Quote",
+    title: "Quotation",
     url: "/admin/quote",
     icon: QuoteIcon,
   },
@@ -169,7 +162,6 @@ export function AppSidebar() {
   const pathname = usePathname()
   const { isAuthenticated, logout, isLoading } = useAuth()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
-
   const [collapsedSections, setCollapsedSections] = useState({
     business: true,
     visa: true,
@@ -251,6 +243,7 @@ export function AppSidebar() {
           </div>
         </div>
       </SidebarHeader>
+
       <SidebarContent className="p-3">
         <div className="space-y-4">
           {/* System Navigation */}
@@ -263,8 +256,9 @@ export function AppSidebar() {
               <SidebarMenu className="space-y-1">{systemItems.map(renderMenuItem)}</SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
+
           {/* Business Solutions Section */}
-          <Collapsible open={!collapsedSections.business} onOpenChange={() => toggleSection("business")}>
+          {/* <Collapsible open={!collapsedSections.business} onOpenChange={() => toggleSection("business")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
@@ -281,9 +275,10 @@ export function AppSidebar() {
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
-          </Collapsible>
+          </Collapsible> */}
+
           {/* Visa Services Section */}
-          <Collapsible open={!collapsedSections.visa} onOpenChange={() => toggleSection("visa")}>
+          {/* <Collapsible open={!collapsedSections.visa} onOpenChange={() => toggleSection("visa")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
@@ -300,9 +295,10 @@ export function AppSidebar() {
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
-          </Collapsible>
+          </Collapsible> */}
+
           {/* Tax & Accounting Section */}
-          <Collapsible open={!collapsedSections.tax} onOpenChange={() => toggleSection("tax")}>
+          {/* <Collapsible open={!collapsedSections.tax} onOpenChange={() => toggleSection("tax")}>
             <SidebarGroup>
               <CollapsibleTrigger asChild>
                 <SidebarGroupLabel className="text-xs font-bold text-gray-700 uppercase tracking-wider px-2 mb-2 flex items-center gap-2 cursor-pointer hover:text-gray-900 transition-colors">
@@ -319,9 +315,10 @@ export function AppSidebar() {
                 </SidebarGroupContent>
               </CollapsibleContent>
             </SidebarGroup>
-          </Collapsible>
+          </Collapsible> */}
         </div>
       </SidebarContent>
+
       <SidebarFooter className="border-t border-gray-100 p-3 bg-gray-50/50">
         <SidebarMenu>
           <SidebarMenuItem>

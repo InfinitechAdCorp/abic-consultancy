@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { MoreHorizontal, Eye, Search, Loader2, ArrowUpDown, Mail, Send, Trash2 } from "lucide-react"
+import { MoreHorizontal, Eye, Search, Loader2, ArrowUpDown, Mail, Send, Trash2, Reply } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -385,75 +385,6 @@ export default function QuotesAdminPage() {
                       )}
 
                       <div className="flex gap-4 pt-4">
-                        <Dialog open={isReplyModalOpen} onOpenChange={setIsReplyModalOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              onClick={() => {
-                                setReplyData({
-                                  subject: `Re: HR Outsourcing Quote Request - ${selectedQuote.company_name}`,
-                                  message: `Dear ${selectedQuote.contact_person},\n\nThank you for your interest in our HR outsourcing services. We have reviewed your requirements and would like to discuss your needs further.\n\nBest regards,\nHR Outsourcing Team`,
-                                })
-                              }}
-                            >
-                              <Mail className="mr-2 h-4 w-4" />
-                              Reply via Email
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-                            <DialogHeader>
-                              <DialogTitle>Reply to Quote Request</DialogTitle>
-                              <DialogDescription>
-                                Send a reply to {selectedQuote.contact_person} at {selectedQuote.email}
-                              </DialogDescription>
-                            </DialogHeader>
-                            <form onSubmit={handleReplySubmit} className="space-y-4 py-4">
-                              <div>
-                                <Label htmlFor="subject">Subject</Label>
-                                <Input
-                                  id="subject"
-                                  value={replyData.subject}
-                                  onChange={(e) => setReplyData((prev) => ({ ...prev, subject: e.target.value }))}
-                                  required
-                                  disabled={isSending}
-                                />
-                              </div>
-                              <div>
-                                <Label htmlFor="message">Message</Label>
-                                <Textarea
-                                  id="message"
-                                  value={replyData.message}
-                                  onChange={(e) => setReplyData((prev) => ({ ...prev, message: e.target.value }))}
-                                  required
-                                  rows={8}
-                                  disabled={isSending}
-                                  className="resize-none"
-                                />
-                              </div>
-                              <DialogFooter>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => setIsReplyModalOpen(false)}
-                                  disabled={isSending}
-                                >
-                                  Cancel
-                                </Button>
-                                <Button type="submit" disabled={isSending}>
-                                  {isSending ? (
-                                    <>
-                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Send className="mr-2 h-4 w-4" /> Send Reply
-                                    </>
-                                  )}
-                                </Button>
-                              </DialogFooter>
-                            </form>
-                          </DialogContent>
-                        </Dialog>
-
                         <Select onValueChange={(value) => updateQuoteStatus(selectedQuote.id, value)}>
                           <SelectTrigger className="w-40">
                             <SelectValue placeholder="Update Status" />
@@ -471,6 +402,77 @@ export default function QuotesAdminPage() {
                 )}
               </SheetContent>
             </Sheet>
+            <Dialog open={isReplyModalOpen} onOpenChange={setIsReplyModalOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedQuote(quote)
+                    setReplyData({
+                      subject: `Re: HR Outsourcing Quote Request - ${quote.company_name}`,
+                      message: `Dear ${quote.contact_person},\n\nThank you for your interest in our HR outsourcing services. We have reviewed your requirements and would like to discuss your needs further.\n\nBest regards,\nHR Outsourcing Team`,
+                    })
+                  }}
+                >
+                  <Reply className="h-4 w-4" />
+                  <span className="ml-1 sr-only sm:not-sr-only">Reply</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Reply to Quote Request</DialogTitle>
+                  <DialogDescription>
+                    Send a reply to {selectedQuote?.contact_person} at {selectedQuote?.email}
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleReplySubmit} className="space-y-4 py-4">
+                  <div>
+                    <Label htmlFor="subject">Subject</Label>
+                    <Input
+                      id="subject"
+                      value={replyData.subject}
+                      onChange={(e) => setReplyData((prev) => ({ ...prev, subject: e.target.value }))}
+                      required
+                      disabled={isSending}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="message">Message</Label>
+                    <Textarea
+                      id="message"
+                      value={replyData.message}
+                      onChange={(e) => setReplyData((prev) => ({ ...prev, message: e.target.value }))}
+                      required
+                      rows={8}
+                      disabled={isSending}
+                      className="resize-none"
+                    />
+                  </div>
+                  <DialogFooter>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setIsReplyModalOpen(false)}
+                      disabled={isSending}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isSending}>
+                      {isSending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" /> Send Reply
+                        </>
+                      )}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="sm">
@@ -488,7 +490,7 @@ export default function QuotesAdminPage() {
                 <Dialog>
                   <DialogTrigger asChild>
                     <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                      <Trash2 className="mr-2 h-4 w-4" />
+                      <Trash2 className="text-red-600 focus:text-red-600" />
                       Delete Quote
                     </DropdownMenuItem>
                   </DialogTrigger>

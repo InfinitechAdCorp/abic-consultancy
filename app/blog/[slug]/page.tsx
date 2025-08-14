@@ -48,7 +48,6 @@ export default function BlogPostPage() {
 
   const [post, setPost] = useState<BlogPost | null>(null)
   const [relatedPosts, setRelatedPosts] = useState<RelatedPost[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -59,7 +58,6 @@ export default function BlogPostPage() {
 
   const fetchBlogPost = async (postSlug: string) => {
     try {
-      setLoading(true)
       const response = await fetch(`/api/blog?slug=${postSlug}`)
 
       if (!response.ok) {
@@ -72,9 +70,90 @@ export default function BlogPostPage() {
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred")
-    } finally {
-      setLoading(false)
     }
+  }
+
+  const generateKeyHighlights = (post: BlogPost) => {
+    const highlights = []
+
+    // Clean and analyze the actual content
+    const contentText = post.content
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+
+    const title = post.title
+    const excerpt = post.excerpt || ""
+
+    // Extract key themes from title
+    const titleWords = title.toLowerCase().split(/\s+/)
+    const contentWords = contentText.toLowerCase().split(/\s+/)
+    const excerptWords = excerpt.toLowerCase().split(/\s+/)
+
+    // Combine all text for analysis
+    const allText = `${title} ${excerpt} ${contentText}`.toLowerCase()
+
+    // Generate highlights based on actual content themes
+    if (allText.includes("celebrating") || allText.includes("milestone") || allText.includes("achievement")) {
+      highlights.push(`Discover the key milestones and achievements highlighted in "${post.title}"`)
+      highlights.push("Learn about the collective efforts and successes that made this year remarkable")
+      highlights.push("Gain insights into recognizing and celebrating team accomplishments")
+    } else if (allText.includes("strategy") || allText.includes("business") || allText.includes("growth")) {
+      highlights.push(`Explore the strategic insights presented in "${post.title}"`)
+      highlights.push("Understand the business approaches and methodologies discussed")
+      highlights.push("Learn practical applications from the strategies outlined")
+    } else if (allText.includes("technology") || allText.includes("digital") || allText.includes("innovation")) {
+      highlights.push(`Discover the technological concepts explored in "${post.title}"`)
+      highlights.push("Learn about the digital innovations and their practical applications")
+      highlights.push("Understand how these technologies can impact your work")
+    } else if (allText.includes("health") || allText.includes("wellness") || allText.includes("medical")) {
+      highlights.push(`Learn about the health insights shared in "${post.title}"`)
+      highlights.push("Discover evidence-based approaches to the topics discussed")
+      highlights.push("Understand practical steps you can take based on this information")
+    } else if (allText.includes("finance") || allText.includes("investment") || allText.includes("money")) {
+      highlights.push(`Explore the financial concepts presented in "${post.title}"`)
+      highlights.push("Learn about the investment strategies and financial insights discussed")
+      highlights.push("Understand how to apply these financial principles")
+    } else {
+      // Generate highlights based on actual content structure
+      const sentences = contentText.split(/[.!?]+/).filter((s) => s.trim().length > 20)
+
+      if (sentences.length > 0) {
+        // Use the first meaningful sentence as a highlight
+        const firstSentence = sentences[0].trim()
+        if (firstSentence.length > 10) {
+          highlights.push(`Key insight: ${firstSentence.substring(0, 80)}${firstSentence.length > 80 ? "..." : ""}`)
+        }
+      }
+
+      // Use excerpt if available
+      if (excerpt && excerpt.length > 10) {
+        highlights.push(`Main focus: ${excerpt.substring(0, 80)}${excerpt.length > 80 ? "..." : ""}`)
+      }
+
+      // Generate a reading time based highlight
+      if (post.reading_time > 5) {
+        highlights.push(`Comprehensive coverage of the topic in ${post.reading_time} minutes`)
+      } else {
+        highlights.push(`Quick insights delivered in just ${post.reading_time} minutes`)
+      }
+    }
+
+    // Ensure we have exactly 3 highlights and they're not empty
+    const validHighlights = highlights.filter((h) => h && h.length > 10)
+
+    // If we don't have enough valid highlights, add content-based ones
+    while (validHighlights.length < 3) {
+      if (validHighlights.length === 0) {
+        validHighlights.push(`Explore the insights shared in "${post.title}"`)
+      } else if (validHighlights.length === 1) {
+        validHighlights.push(`Learn from the experiences and perspectives presented`)
+      } else {
+        validHighlights.push(`Gain valuable takeaways from this ${post.reading_time}-minute read`)
+      }
+    }
+
+    return validHighlights.slice(0, 3)
   }
 
   const formatDate = (dateString: string) => {
@@ -107,19 +186,6 @@ export default function BlogPostPage() {
       // Fallback to copying URL
       navigator.clipboard.writeText(window.location.href)
     }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-white">
-        <div className="container mx-auto px-4 py-16">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading blog post...</p>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (error || !post) {
@@ -157,10 +223,6 @@ export default function BlogPostPage() {
                 Back to Blog
               </Button>
             </Link>
-            <Button onClick={handleShare} variant="outline" size="sm">
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
           </div>
         </div>
       </div>
@@ -184,8 +246,6 @@ export default function BlogPostPage() {
               </div>
 
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight">{post.title}</h1>
-
-              <p className="text-lg text-gray-600 leading-relaxed">{post.excerpt}</p>
             </div>
 
             {/* Video/Media */}
@@ -282,25 +342,12 @@ export default function BlogPostPage() {
                     Key Highlights
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        Comprehensive guide to{" "}
-                        {post.title.toLowerCase().includes("summer")
-                          ? "summer business strategies"
-                          : "business optimization"}
-                      </p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-gray-700 leading-relaxed">
-                        Expert insights from ABIC Consultancy professionals
-                      </p>
-                    </div>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-1.5 h-1.5 bg-teal-400 rounded-full mt-2 flex-shrink-0"></div>
-                      <p className="text-sm text-gray-700 leading-relaxed">Practical solutions for modern businesses</p>
-                    </div>
+                    {generateKeyHighlights(post).map((highlight, index) => (
+                      <div key={index} className="flex items-start space-x-3">
+                        <div className="w-1.5 h-1.5 bg-teal-400 rounded-full mt-2 flex-shrink-0"></div>
+                        <p className="text-sm text-gray-700 leading-relaxed">{highlight}</p>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
@@ -373,7 +420,6 @@ export default function BlogPostPage() {
                       </h3>
                       <p className="text-gray-600 text-sm mb-3 line-clamp-2">{relatedPost.excerpt}</p>
                       <div className="flex items-center justify-between text-xs text-gray-500">
-                       
                         <span>{relatedPost.reading_time} min read</span>
                       </div>
                     </CardContent>

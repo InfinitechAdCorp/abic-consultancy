@@ -1,8 +1,6 @@
 "use client"
 
-// Removed useState, useEffect, useRouter, and isLoading from this file
-// as authentication is now handled by middleware and AuthProvider's useEffect
-import { useAuth } from "@/components/auth-provider" // Still need useAuth for logout
+import { useAuth } from "@/components/auth-provider"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -22,90 +20,157 @@ import {
   Area,
   ComposedChart,
 } from "recharts"
-import { TrendingUp, TrendingDown, Users, FileText, DollarSign, Clock, Building2, Plane, Receipt, AlertCircle, CheckCircle, XCircle, Eye, LogOut } from 'lucide-react'
-import { SidebarProvider } from "@/components/ui/sidebar"
+import {
+  TrendingUp,
+  Users,
+  FileText,
+  Clock,
+  Building2,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Eye,
+  LogOut,
+  Loader2,
+  Menu,
+} from "lucide-react"
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar" // Added SidebarTrigger
 import { AppSidebar } from "@/components/app-sidebar"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useToast } from "@/components/ui/use-toast"
 
-// Sample data for charts
-const monthlyRevenue = [
-  { month: "Jan", revenue: 45000, applications: 120 },
-  { month: "Feb", revenue: 52000, applications: 140 },
-  { month: "Mar", revenue: 48000, applications: 130 },
-  { month: "Apr", revenue: 61000, applications: 165 },
-  { month: "May", revenue: 55000, applications: 150 },
-  { month: "Jun", revenue: 67000, applications: 180 },
-]
-const serviceDistribution = [
-  { name: "Business Setup", value: 35, color: "#3B82F6" },
-  { name: "Visa Services", value: 28, color: "#10B981" },
-  { name: "Tax & Accounting", value: 22, color: "#F59E0B" },
-  { name: "Renewals", value: 15, color: "#EF4444" },
-]
-const weeklyApplications = [
-  { day: "Mon", applications: 25 },
-  { day: "Tue", applications: 32 },
-  { day: "Wed", applications: 28 },
-  { day: "Thu", applications: 35 },
-  { day: "Fri", applications: 42 },
-  { day: "Sat", applications: 18 },
-  { day: "Sun", applications: 12 },
-]
-const recentApplications = [
-  {
-    id: "APP-001",
-    client: "Tech Solutions LLC",
-    service: "Business Setup",
-    status: "completed",
-    amount: "$2,500",
-    date: "2024-01-15",
-  },
-  {
-    id: "APP-002",
-    client: "Global Imports Co.",
-    service: "Work Visa",
-    status: "pending",
-    amount: "$1,800",
-    date: "2024-01-14",
-  },
-  {
-    id: "APP-003",
-    client: "Digital Marketing Inc.",
-    service: "Tax Filing",
-    status: "in-progress",
-    amount: "$950",
-    date: "2024-01-14",
-  },
-  {
-    id: "APP-004",
-    client: "Restaurant Group",
-    service: "License Renewal",
-    status: "completed",
-    amount: "$1,200",
-    date: "2024-01-13",
-  },
-  {
-    id: "APP-005",
-    client: "Construction Ltd.",
-    service: "Amendment",
-    status: "rejected",
-    amount: "$750",
-    date: "2024-01-13",
-  },
-]
+interface DashboardStats {
+  totalConsultations: number
+  totalBlogPosts: number
+  totalContactForms: number
+  totalNewsletterSubscribers: number
+  completionRate: number
+  consultations: {
+    total: number
+    pending: number
+    confirmed: number
+    completed: number
+    cancelled: number
+    today: number
+    thisMonth: number
+  }
+  blogs: {
+    total: number
+    published: number
+  }
+  events: {
+    total: number
+    upcoming: number
+  }
+  testimonials: {
+    total: number
+    approved: number
+    pending: number
+  }
+  communications: {
+    contactForms: number
+    announcements: number
+    newsletterSubscribers: number
+  }
+}
+
+interface ChartData {
+  monthlyConsultations: Array<{ month: string; consultations: number; applications: number }>
+  serviceDistribution: Array<{ name: string; value: number; color: string }>
+  weeklyApplications: Array<{ day: string; applications: number }>
+  recentActivities: Array<{
+    id: string
+    type: string
+    client: string
+    service: string
+    status: string
+    date: string
+  }>
+}
 
 export default function AdminDashboard() {
   const [selectedPeriod, setSelectedPeriod] = useState("30d")
-  const { logout } = useAuth() // Only need logout here
+  const { logout } = useAuth()
+  const { toast } = useToast()
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null)
+  const [chartData, setChartData] = useState<ChartData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await fetch("/api/dashboard/stats")
+      if (!response.ok) {
+        throw new Error("Failed to fetch dashboard statistics")
+      }
+      const result = await response.json()
+      setDashboardStats(result.data)
+    } catch (error) {
+      console.error("Error fetching dashboard stats:", error)
+      setError("Failed to load dashboard statistics")
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load dashboard statistics",
+      })
+    }
+  }
+
+  const fetchChartData = async () => {
+    try {
+      const [monthlyResponse, serviceResponse, weeklyResponse, recentResponse] = await Promise.all([
+        fetch("/api/dashboard/charts?type=monthly-consultations"),
+        fetch("/api/dashboard/charts?type=service-distribution"),
+        fetch("/api/dashboard/charts?type=weekly-applications"),
+        fetch("/api/dashboard/charts?type=recent-activities"),
+      ])
+
+      const [monthlyData, serviceData, weeklyData, recentData] = await Promise.all([
+        monthlyResponse.json(),
+        serviceResponse.json(),
+        weeklyResponse.json(),
+        recentResponse.json(),
+      ])
+
+      setChartData({
+        monthlyConsultations: monthlyData.data || [],
+        serviceDistribution: serviceData.data || [],
+        weeklyApplications: weeklyData.data || [],
+        recentActivities: recentData.data || [],
+      })
+    } catch (error) {
+      console.error("Error fetching chart data:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load chart data",
+      })
+    }
+  }
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      setLoading(true)
+      await Promise.all([fetchDashboardStats(), fetchChartData()])
+      setLoading(false)
+    }
+
+    loadDashboardData()
+  }, [])
 
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "completed":
+      case "published":
         return <CheckCircle className="h-4 w-4 text-green-500" />
       case "pending":
         return <Clock className="h-4 w-4 text-yellow-500" />
+      case "confirmed":
       case "in-progress":
         return <AlertCircle className="h-4 w-4 text-blue-500" />
+      case "cancelled":
       case "rejected":
         return <XCircle className="h-4 w-4 text-red-500" />
       default:
@@ -116,114 +181,162 @@ export default function AdminDashboard() {
   const getStatusBadge = (status: string) => {
     const variants = {
       completed: "default",
+      published: "default",
       pending: "secondary",
+      confirmed: "outline",
       "in-progress": "outline",
+      cancelled: "destructive",
       rejected: "destructive",
+      draft: "secondary",
     } as const
 
     return <Badge variant={variants[status as keyof typeof variants] || "secondary"}>{status.replace("-", " ")}</Badge>
   }
 
-  // No conditional rendering based on isAuthenticated/isLoading here,
-  // as middleware handles redirection before this component renders for unauthenticated users.
+  if (loading) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex-1 lg:ml-80 min-w-0 flex items-center justify-center">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading dashboard...</span>
+            </div>
+          </div>
+        </SidebarProvider>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <SidebarProvider>
+          <AppSidebar />
+          <div className="flex-1 lg:ml-80 min-w-0 flex items-center justify-center">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          </div>
+        </SidebarProvider>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
       <SidebarProvider>
         <AppSidebar />
-        {/* Main Content with Manual Margin */}
-        <div className="flex-1 ml-80 min-w-0">
-          {/* Header with Logout Button */}
-          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-white px-6">
-            <h1 className="text-xl font-semibold">Admin Dashboard</h1>
+        <div className="flex-1 lg:ml-80 min-w-0">
+          <header className="sticky top-0 z-10 flex h-16 items-center justify-between gap-4 border-b bg-white px-4 lg:px-6">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger className="lg:hidden">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Menu className="h-4 w-4" />
+                  <span className="sr-only">Toggle sidebar</span>
+                </Button>
+              </SidebarTrigger>
+              <h1 className="text-lg lg:text-xl font-semibold">Admin Dashboard</h1>
+            </div>
             <Button onClick={logout} variant="outline" size="sm">
               <LogOut className="h-4 w-4 mr-2" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </Button>
           </header>
 
-          {/* Main Content */}
           <main className="flex-1 overflow-auto">
-            <div className="p-6 space-y-6">
-              {/* Welcome Message */}
+            <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
               <div>
-                <p className="text-gray-600">Welcome back! Here's what's happening with your business services.</p>
+                <p className="text-gray-600 text-sm lg:text-base">
+                  Welcome back! Here's what's happening with your business services.
+                </p>
               </div>
-              {/* Key Metrics */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-blue-700">Total Revenue</CardTitle>
-                    <DollarSign className="h-4 w-4 text-blue-600" />
+                    <CardTitle className="text-sm font-medium text-blue-700">Total Consultations</CardTitle>
+                    <Users className="h-4 w-4 text-blue-600" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-blue-900">$328,000</div>
+                    <div className="text-xl lg:text-2xl font-bold text-blue-900">
+                      {dashboardStats?.totalConsultations?.toLocaleString() || "0"}
+                    </div>
                     <p className="text-xs text-blue-600 flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 mr-1" />
-                      +12.5% from last month
+                      {dashboardStats?.consultations.thisMonth || 0} this month
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-green-700">Active Applications</CardTitle>
+                    <CardTitle className="text-sm font-medium text-green-700">Blog Posts</CardTitle>
                     <FileText className="h-4 w-4 text-green-600" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-green-900">1,285</div>
+                    <div className="text-xl lg:text-2xl font-bold text-green-900">
+                      {dashboardStats?.totalBlogPosts?.toLocaleString() || "0"}
+                    </div>
                     <p className="text-xs text-green-600 flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 mr-1" />
-                      +8.2% from last month
+                      {dashboardStats?.blogs.published || 0} published
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-purple-700">Total Clients</CardTitle>
-                    <Users className="h-4 w-4 text-purple-600" />
+                    <CardTitle className="text-sm font-medium text-purple-700">Contact Forms</CardTitle>
+                    <FileText className="h-4 w-4 text-purple-600" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-purple-900">2,847</div>
+                    <div className="text-xl lg:text-2xl font-bold text-purple-900">
+                      {dashboardStats?.totalContactForms?.toLocaleString() || "0"}
+                    </div>
                     <p className="text-xs text-purple-600 flex items-center mt-1">
                       <TrendingUp className="h-3 w-3 mr-1" />
-                      +15.3% from last month
+                      Total submissions received
                     </p>
                   </CardContent>
                 </Card>
                 <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium text-orange-700">Completion Rate</CardTitle>
-                    <CheckCircle className="h-4 w-4 text-orange-600" />
+                    <CardTitle className="text-sm font-medium text-orange-700">Newsletter Subscribers</CardTitle>
+                    <Users className="h-4 w-4 text-orange-600" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-orange-900">94.2%</div>
+                    <div className="text-xl lg:text-2xl font-bold text-orange-900">
+                      {dashboardStats?.totalNewsletterSubscribers?.toLocaleString() || "0"}
+                    </div>
                     <p className="text-xs text-orange-600 flex items-center mt-1">
-                      <TrendingDown className="h-3 w-3 mr-1" />
-                      -2.1% from last month
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Active subscribers
                     </p>
                   </CardContent>
                 </Card>
               </div>
-              {/* Charts Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Revenue Chart */}
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 lg:gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Monthly Revenue & Applications</CardTitle>
-                    <CardDescription>Revenue and application trends over the last 6 months</CardDescription>
+                    <CardTitle className="text-base lg:text-lg">Monthly Consultations & Applications</CardTitle>
+                    <CardDescription className="text-sm">
+                      Consultation and application trends over the last 6 months
+                    </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <ComposedChart data={monthlyRevenue}>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <ComposedChart data={chartData?.monthlyConsultations || []}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis yAxisId="left" />
-                        <YAxis yAxisId="right" orientation="right" />
+                        <XAxis dataKey="month" fontSize={12} />
+                        <YAxis yAxisId="left" fontSize={12} />
+                        <YAxis yAxisId="right" orientation="right" fontSize={12} />
                         <Tooltip />
                         <Area
                           yAxisId="left"
                           type="monotone"
-                          dataKey="revenue"
+                          dataKey="consultations"
                           stroke="#3B82F6"
                           fill="#3B82F6"
                           fillOpacity={0.1}
@@ -233,94 +346,92 @@ export default function AdminDashboard() {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-                {/* Service Distribution */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Service Distribution</CardTitle>
-                    <CardDescription>Breakdown of services by percentage</CardDescription>
+                    <CardTitle className="text-base lg:text-lg">Service Distribution</CardTitle>
+                    <CardDescription className="text-sm">Breakdown of services by percentage</CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
+                    <ResponsiveContainer width="100%" height={250}>
                       <PieChart>
                         <Pie
-                          data={serviceDistribution}
+                          data={chartData?.serviceDistribution || []}
                           cx="50%"
                           cy="50%"
-                          innerRadius={60}
-                          outerRadius={100}
+                          innerRadius={50}
+                          outerRadius={80}
                           paddingAngle={5}
                           dataKey="value"
                         >
-                          {serviceDistribution.map((entry, index) => (
+                          {(chartData?.serviceDistribution || []).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={entry.color} />
                           ))}
                         </Pie>
                         <Tooltip />
                       </PieChart>
                     </ResponsiveContainer>
-                    <div className="grid grid-cols-2 gap-4 mt-4">
-                      {serviceDistribution.map((item, index) => (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 lg:gap-4 mt-4">
+                      {(chartData?.serviceDistribution || []).map((item, index) => (
                         <div key={index} className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
-                          <span className="text-sm text-gray-600">{item.name}</span>
-                          <span className="text-sm font-medium ml-auto">{item.value}%</span>
+                          <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }} />
+                          <span className="text-xs lg:text-sm text-gray-600 truncate">{item.name}</span>
+                          <span className="text-xs lg:text-sm font-medium ml-auto">{item.value}%</span>
                         </div>
                       ))}
                     </div>
                   </CardContent>
                 </Card>
               </div>
-              {/* Weekly Applications & Recent Applications */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Weekly Applications */}
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Weekly Applications</CardTitle>
-                    <CardDescription>Applications received this week</CardDescription>
+                    <CardTitle className="text-base lg:text-lg">Weekly Applications</CardTitle>
+                    <CardDescription className="text-sm">Applications received this week</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={200}>
-                      <BarChart data={weeklyApplications}>
+                      <BarChart data={chartData?.weeklyApplications || []}>
                         <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="day" />
-                        <YAxis />
+                        <XAxis dataKey="day" fontSize={12} />
+                        <YAxis fontSize={12} />
                         <Tooltip />
                         <Bar dataKey="applications" fill="#3B82F6" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
-                {/* Recent Applications */}
-                <Card className="lg:col-span-2">
-                  <CardHeader className="flex flex-row items-center justify-between">
+                <Card className="xl:col-span-2">
+                  <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
-                      <CardTitle>Recent Applications</CardTitle>
-                      <CardDescription>Latest application submissions</CardDescription>
+                      <CardTitle className="text-base lg:text-lg">Recent Activities</CardTitle>
+                      <CardDescription className="text-sm">Latest submissions and activities</CardDescription>
                     </div>
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-2" />
-                      View All
-                    </Button>
+                   
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-4">
-                      {recentApplications.map((app) => (
-                        <div key={app.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-4">
-                            {getStatusIcon(app.status)}
-                            <div>
-                              <p className="font-medium text-gray-900">{app.client}</p>
-                              <p className="text-sm text-gray-600">
-                                {app.service} • {app.id}
+                    <div className="space-y-3 lg:space-y-4">
+                      {(chartData?.recentActivities || []).map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="flex flex-col sm:flex-row sm:items-center justify-between p-3 lg:p-4 bg-gray-50 rounded-lg gap-3"
+                        >
+                          <div className="flex items-center gap-3 lg:gap-4">
+                            {getStatusIcon(activity.status)}
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-gray-900 text-sm lg:text-base truncate">
+                                {activity.client}
+                              </p>
+                              <p className="text-xs lg:text-sm text-gray-600 truncate">
+                                {activity.service} • {activity.type}
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-medium text-gray-900">{app.amount}</p>
-                              <p className="text-sm text-gray-600">{app.date}</p>
+                          <div className="flex items-center justify-between sm:justify-end gap-3 lg:gap-4">
+                            <div className="text-left sm:text-right">
+                              <p className="text-xs lg:text-sm text-gray-600">{activity.date}</p>
                             </div>
-                            {getStatusBadge(app.status)}
+                            {getStatusBadge(activity.status)}
                           </div>
                         </div>
                       ))}
@@ -328,39 +439,66 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
-              {/* Quick Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Business Setups</CardTitle>
+                    <CardTitle className="text-sm font-medium">Blog Posts</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-xl lg:text-2xl font-bold">{dashboardStats?.blogs.published || 0}</div>
+                    <Progress
+                      value={
+                        dashboardStats?.blogs.total
+                          ? (dashboardStats.blogs.published / dashboardStats.blogs.total) * 100
+                          : 0
+                      }
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {dashboardStats?.blogs.published || 0} of {dashboardStats?.blogs.total || 0} published
+                    </p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Events</CardTitle>
                     <Building2 className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">456</div>
-                    <Progress value={75} className="mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">75% of monthly target</p>
+                    <div className="text-xl lg:text-2xl font-bold">{dashboardStats?.events.upcoming || 0}</div>
+                    <Progress
+                      value={
+                        dashboardStats?.events.total
+                          ? (dashboardStats.events.upcoming / dashboardStats.events.total) * 100
+                          : 0
+                      }
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {dashboardStats?.events.upcoming || 0} upcoming events
+                    </p>
                   </CardContent>
                 </Card>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Visa Applications</CardTitle>
-                    <Plane className="h-4 w-4 text-muted-foreground" />
+                    <CardTitle className="text-sm font-medium">Testimonials</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">289</div>
-                    <Progress value={58} className="mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">58% of monthly target</p>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">Tax Services</CardTitle>
-                    <Receipt className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold">167</div>
-                    <Progress value={42} className="mt-2" />
-                    <p className="text-xs text-muted-foreground mt-2">42% of monthly target</p>
+                    <div className="text-xl lg:text-2xl font-bold">{dashboardStats?.testimonials.approved || 0}</div>
+                    <Progress
+                      value={
+                        dashboardStats?.testimonials.total
+                          ? (dashboardStats.testimonials.approved / dashboardStats.testimonials.total) * 100
+                          : 0
+                      }
+                      className="mt-2"
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {dashboardStats?.testimonials.pending || 0} pending approval
+                    </p>
                   </CardContent>
                 </Card>
               </div>
